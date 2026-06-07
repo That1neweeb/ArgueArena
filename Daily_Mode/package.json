@@ -2,7 +2,7 @@
   "scripts": {
     "dev": "nodemon ./server/server.js"
   },
-  "type": "commonjs",
+  "type": "module",
   "dependencies": {
     "cors": "^2.8.6",
     "express": "^5.2.1",
