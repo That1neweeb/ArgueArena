@@ -1,9 +1,9 @@
-import express, { static } from 'express';
-import { join } from 'path';
+import express from 'express';
+import path from 'path';
 // const http = require('http');
 
 import { Server } from 'socket.io';
-import formRoutes from './routes/forumRoutes';
+import forumRoutes from './routes/forumRoutes';
 
 const app = express();
 const PORT = 3000;
@@ -12,9 +12,9 @@ const io = new Server(server);
 
 let socketsConnected = new Set();
 
-app.use(static(join(__dirname, '..','client')));
+app.use(express.static(path.join(__dirname, '..','client')));
 
-app.use('/forums',forumRoutes)
+app.use('/forums',forumRoutes);
 
 io.on('connection', onConnected);
 
