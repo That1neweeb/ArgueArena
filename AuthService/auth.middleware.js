@@ -21,3 +21,28 @@ export async function verifyToken(req, res, next) {
         });
     }
 }   
+
+export async function isAuthenticated(req,res,next) {
+   try
+    { 
+    const authHeader = req.headers.authorization;
+
+    if(!authHeader || !authHeader.startswith('Bearer')) {
+        return res.status(401).json({message:'Not authorized'});
+    }
+    const token = authHeader.split(" ")[1]
+
+    const decode = jwt.verify(token,process.env.JWT_SECRET) ;
+
+     req.user = {
+        id : decode.id,
+        email: decode.email
+    }
+
+    next();
+}
+catch(e){
+    res.status(401).json('Invalid or expired token')
+}
+
+}

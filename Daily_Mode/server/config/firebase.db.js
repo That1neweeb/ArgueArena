@@ -1,15 +1,25 @@
+import admin from 'firebase-admin';
+import path from 'path';
+import { fileURLToPath, pathToFileURL } from 'url';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-import { initializeApp, credential as _credential } from "firebase-admin";
-import { execPath } from "node:process";
+let serviceAccount;
+try {
+  // Adjust the relative path below to where you store your serviceAccountKey.json
+  const serviceAccountUrl = pathToFileURL(path.join(__dirname, '../serviceAccountKey.json'));
+  serviceAccount = (await import(serviceAccountUrl.href, { with: { type: 'json' } })).default;
+} catch (err) {
+  console.error('Could not load serviceAccountKey.json. Place your file at Daily_Mode/server/serviceAccountKey.json or update the import path.');
+  throw err;
+}
 
-import serviceAccount from "path/to/serviceAccountKey.json";
-
-initializeApp({
-  credential: _credential.cert(serviceAccount),
-  databaseURL: "https://arguearena-9fdee-default-rtdb.asia-southeast1.firebasedatabase.app"
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: 'https://arguearena-9fdee-default-rtdb.asia-southeast1.firebasedatabase.app'
 });
 
-const db = admin.fireStore();
+const db = admin.firestore();
 
 export default db;

@@ -2,7 +2,7 @@ import { User } from "../Models/user.model";
 import bcrypt from 'bcrypt';
 import { generateToken } from "./jwt.utils";
 
-export default async function Register(req,res){
+export  async function Register(req,res){
     const { username, email, password, cpassword} = req.body;
 
     if (!username) return res.status(400).json({message:'Username field is empty'})
@@ -38,7 +38,7 @@ export default async function Register(req,res){
         if(existingUser) return res.status(400).json({message:'User already exists'});
 
         // hash password
-        const hash_password = await password(password);
+        const hash_password = await passwordHash(password);
         
         const newUser = await User.create({
             email,
@@ -54,6 +54,41 @@ export default async function Register(req,res){
 
 }
 
+export  async function Login(req,res){
+    const {email, password} = req.body
+    if (!email) return res.status(400).json({message:'email field is empty'})
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+        return res.status(400).json({ message: "Invalid email format" });
+        }
+
+        if (!password || password.trim() === "") return res.status(400).json({message:"Password is required"});     
+           
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
+        if (!passwordRegex.test(password)) {
+            console.log(password);
+            return res.status(400).json({ 
+                message: "Password must be 8+ chars, include uppercase, lowercase, number & special char" 
+            });
+        }
+
+    const user = await User.findOne({where:{email}})
+    
+    if(!user) return res.status(404).json({message:'User not found'})
+    
+    const storedPassword = user.password
+    const isMatch = await bcrypt.compare(password,storedPassword)
+
+    if(!isMatch) return res.status(400).json({message:'Invalid password'});
+
+    const access_token = generateToken({user})
+
+    return res.status(200).json({access_token,user: {id:user.id,username: user.username}, message : 'Login Successful'});
+}
+
+
+    
 // hashpassword function
 const passwordHash = async (password) => {
     const saltRounds = 10;

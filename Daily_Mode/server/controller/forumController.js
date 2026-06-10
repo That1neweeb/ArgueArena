@@ -1,9 +1,9 @@
 import {
   createTopic,
   addMessage,
-  getTopics,
+  getTopic,
   getMessages
-} from '../dailyFeedService';
+} from '../dailyFeedService.js';
 
 export async function createForumTopic(req, res) {
   try {
@@ -44,7 +44,7 @@ export async function createMessage(req, res) {
 
 export async function getAllTopics(req, res) {
   try {
-    const topics = await getTopics();
+    const topics = await getTopic();
 
     res.json(topics);
 
