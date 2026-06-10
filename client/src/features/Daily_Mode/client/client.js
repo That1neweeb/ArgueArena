@@ -1,4 +1,10 @@
-const socket = io()
+import { io } from "socket.io-client";
+
+export const socket = io("http://localhost:5000", {
+  autoConnect: true,
+  withCredentials:true
+});
+
 const DalyFeed = document.getElementById('feed');
 const userInput = document.getElementById('msg-input');
 
