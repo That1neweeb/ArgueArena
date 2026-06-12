@@ -3,7 +3,7 @@ import {Sequelize} from 'sequelize'
 export const sequelize = new Sequelize (
     'ArgueArena', //database
     'postgres', //username
-    'root' //password
+    '1234' //password
 , {
     host : 'localhost',
     dialect : 'postgres'
