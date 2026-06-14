@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import './daily_mode.css';
+import './DailyFeed.css';
 import {postMessage } from './client.js'
 
 const initialMessages = [

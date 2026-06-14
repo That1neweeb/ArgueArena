@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 
 import { Server } from 'socket.io';
 import forumRoutes from './routes/forumRoutes.js';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
