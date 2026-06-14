@@ -53,7 +53,7 @@ export default function Login() {
         else if (data.message?.toLowerCase().includes('not found'))
           setErrors({ email: 'No account found with this email' });
       } else {
-        localStorage.setItem('aa_token', data.token);
+        localStorage.setItem('aa_token', data.access_token);  // ✅ fixed
         localStorage.setItem('aa_user',  JSON.stringify(data.user));
         showToast('ACCESS GRANTED — WELCOME BACK', 'success');
         setTimeout(() => navigate('/lobby'), 1300);
@@ -69,7 +69,6 @@ export default function Login() {
     e.preventDefault();
     if (!form.email) { setErrors({ email: 'Enter your email first' }); return; }
     showToast('RESET LINK DISPATCHED TO ' + form.email.toUpperCase(), 'success');
-    // TODO: fetch('/api/auth/forgot-password', ...)
   }
 
   return (
@@ -79,17 +78,14 @@ export default function Login() {
       <div className="auth-page">
         <div className="auth-inner">
 
-          {/* Brand */}
           <div className="glitch-title">ARGUEARENA</div>
           <div className="game-tagline">[ where arguments become battles ]</div>
 
-          {/* Coin insert */}
           <div className="coin-insert">
             <div className="coin-text">⬛ INSERT COIN TO CONTINUE ⬛</div>
             <div className="player-select">PLAYER LOGIN</div>
           </div>
 
-          {/* Card */}
           <div className="auth-card">
             <div className="scan-bar" />
 
@@ -99,7 +95,6 @@ export default function Login() {
 
             <form onSubmit={handleSubmit} noValidate>
 
-              {/* Email */}
               <div className="field">
                 <label className="field-label" htmlFor="email">email</label>
                 <div className="field-wrap">
@@ -116,7 +111,6 @@ export default function Login() {
                 <div className="field-error">{errors.email}</div>
               </div>
 
-              {/* Password */}
               <div className="field">
                 <label className="field-label" htmlFor="password">password</label>
                 <div className="field-wrap">
@@ -133,14 +127,12 @@ export default function Login() {
                 <div className="field-error">{errors.password}</div>
               </div>
 
-              {/* Forgot */}
               <div className="forgot-row">
                 <button className="ghost-link" onClick={handleForgot}>
                   forgot password?
                 </button>
               </div>
 
-              {/* Submit */}
               <button type="submit" className="submit-btn" disabled={loading}>
                 {loading ? <><span className="spinner" />ENTERING ARENA...</> : '▶  LOGIN TO ARENA'}
               </button>
@@ -161,7 +153,6 @@ export default function Login() {
         </div>
       </div>
 
-      {/* Toast */}
       <div className={`toast${toast.show ? ' show' : ''} ${toast.type}`}>
         {toast.msg}
       </div>

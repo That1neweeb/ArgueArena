@@ -1,20 +1,16 @@
-import {Sequelize} from 'sequelize'
+import { Sequelize } from 'sequelize';
 
-export const sequelize = new Sequelize (
-    'ArgueArena', //database
-    'postgres', //username
-    '1234' //password
-, {
-    host : 'localhost',
-    dialect : 'postgres'
-});
+const sequelize = new Sequelize(
+    process.env.PG_DATABASE || 'ArgueArena',
+    process.env.PG_USER     || 'postgres',
+    process.env.PG_PASSWORD || '1234',
+    {
+        host:    process.env.PG_HOST || 'localhost',
+        port:    process.env.PG_PORT || 5432,
+        dialect: 'postgres',
+        logging: false,
+        logging: console.log,
+    }
+);
 
-export const connection = async() => {
-    try{
-        await sequelize.sync({alter:true});
-        console.log("Database connection successful");
-    }
-    catch(e){
-        console.log("Database connection error",e);
-    }
-}
+export default sequelize;   

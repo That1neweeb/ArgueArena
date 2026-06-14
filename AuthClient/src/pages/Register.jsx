@@ -69,14 +69,14 @@ export default function Register() {
 
     setLoading(true);
     try {
-      const res  = await fetch('/api/auth/register', {
+      const res = await fetch('/api/auth/register', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({
-          username:   form.username,
-          email:      form.email,
-          password:   form.password,
-          c_password: form.cpassword,
+          username:  form.username,
+          email:     form.email,
+          password:  form.password,
+          cpassword: form.cpassword,  // ✅ fixed
         }),
       });
       const data = await res.json();
@@ -116,7 +116,6 @@ export default function Register() {
 
                 <form onSubmit={handleSubmit} noValidate>
 
-                  {/* Username */}
                   <div className="field">
                     <label className="field-label" htmlFor="username">username</label>
                     <div className="field-wrap">
@@ -132,7 +131,6 @@ export default function Register() {
                     <div className="field-error">{errors.username}</div>
                   </div>
 
-                  {/* Email */}
                   <div className="field">
                     <label className="field-label" htmlFor="email">email</label>
                     <div className="field-wrap">
@@ -148,7 +146,6 @@ export default function Register() {
                     <div className="field-error">{errors.email}</div>
                   </div>
 
-                  {/* Password */}
                   <div className="field">
                     <label className="field-label" htmlFor="password">password</label>
                     <div className="field-wrap">
@@ -161,7 +158,6 @@ export default function Register() {
                       />
                       <span className="field-icon">🔒</span>
                     </div>
-                    {/* Strength bar */}
                     <div className="strength-bar">
                       {[1,2,3,4].map(i => (
                         <div
@@ -181,7 +177,6 @@ export default function Register() {
                     <div className="field-error">{errors.password}</div>
                   </div>
 
-                  {/* Confirm Password */}
                   <div className="field">
                     <label className="field-label" htmlFor="cpassword">confirm password</label>
                     <div className="field-wrap">
@@ -197,7 +192,6 @@ export default function Register() {
                     <div className="field-error">{errors.cpassword}</div>
                   </div>
 
-                  {/* Terms */}
                   <div className="terms-row">
                     <input
                       type="checkbox" className="terms-check"
@@ -231,7 +225,6 @@ export default function Register() {
                 </div>
               </>
             ) : (
-              /* SUCCESS STATE */
               <div className="success-state">
                 <div className="success-icon">✉️</div>
                 <div className="success-title">TRANSMISSION SENT</div>
