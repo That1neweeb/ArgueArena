@@ -2,9 +2,10 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 // const http = require('http');
-
+import {addMessage} from './dailyFeedService.js'
 import { Server } from 'socket.io';
 import forumRoutes from './routes/forumRoutes.js';
+// import { error } from 'console
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -32,6 +33,8 @@ function onConnected(socket){
     console.log("Client connected", socket.id)
     socketsConnected.add(socket.id)
 
+    io.emit('fetch-msgs')
+
     io.emit('client-total',socketsConnected.size)
 
     socket.on('disconnect',()=>{
@@ -39,9 +42,16 @@ function onConnected(socket){
         socketsConnected.delete(socket.id)
     })
 
-    socket.on('client-msg', (data) => {
-        console.log("message received from", socket.id, data)
-        io.emit('server-msg', data)
+    socket.on('client-msg', async (data, callback) => {
+        try{
+            addMessage(data.topicId, data.userId, data.text, data.time);            
+            socket.broadcast.emit('server-msg', data);
+            
+            callback({success: true, data: savedMessage})
+        }
+        catch(err){
+            callback({success:false, error: err.message});
+        }
     })
 
 

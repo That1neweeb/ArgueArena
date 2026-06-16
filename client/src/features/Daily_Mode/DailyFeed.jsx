@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import './DailyFeed.css';
-import {postMessage } from './client.js'
+import {socket } from './client.js';
+import { data } from 'react-router-dom';
+import { useAuth } from '../../context/authContext.jsx';
 
 const initialMessages = [
   {
@@ -23,29 +25,61 @@ const initialMessages = [
 const topicText = 'Should public transport be free for all citizens?';
 
 export default function App() {
+  console.log("Daily feed rendered");
   const [messages, setMessages] = useState(initialMessages);
   const [message, setMessage] = useState('');
   const feedRef = useRef(null);
+  const {user} = useAuth();
+  const [topic,setTopic] = useState(null);
 
   useEffect(() => {
+
+    socket.on('client-total',(size) => {
+      console.log(size)
+    });
+
+    socket.on('server-msg',(message) => {
+      setMessages((prevMessages)=>[
+        ...prevMessages,message,
+      ]);
+    })
+
+    setTopic(1);
+// Call api here for getting topic ----------  
+
     if (feedRef.current) {
       feedRef.current.scrollTop = feedRef.current.scrollHeight;
     }
-  }, [messages]);
+
+    return () => {
+      socket.off('client-total')
+      socket.off('server-msg')
+    }
+  }, []);
+
+
 
   const postMessage = () => {
     if (!message.trim()) return;
 
-    setMessages((prevMessages) => [
-      ...prevMessages,
-      {
-        id: Date.now(),
+    const newMessage = {
+        id: user.id,
         text: message.trim(),
-        user: 'You',
+        topic_id: topic_id,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      },
+    }
+
+    socket.emit('client-msg',newMessage, (response) => {
+      if(!response.success){
+        console.error(response.error);
+      }
+    });
+
+    setMessages((prevMessages) => [
+      ...prevMessages,newMessage,
     ]);
     setMessage('');
+
   };
 
   const handleEnter = (event) => {

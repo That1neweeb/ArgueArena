@@ -9,15 +9,16 @@ export async function createTopic(title, createdBy) {
   });
 }
 
-export async function addMessage(topicId, userId, text) {
+export async function addMessage(topicId, userId, text, time) {
   return await db
     .collection('forums')
     .doc(topicId)
     .collection('messages')
     .add({
       user_id: userId,
+      topic_id: topicId,
       text,
-      sent_at: admin.firestore.FieldValue.serverTimestamp()
+      sent_at: time
     });
 }
 
