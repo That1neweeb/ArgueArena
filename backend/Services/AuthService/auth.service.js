@@ -37,14 +37,14 @@ export async function Register(req,res){
 
     const newUser = await User.create({
         email,
-        username,
+        Username: username,
         password: hash_password,
     });
     const token = generateToken(newUser);
 
     return res.status(200).json({
         message: 'User registration successful',
-        user: { id: newUser.id },
+        user: { id: newUser.id, username: newUser.Username },
         token,
     });
 }
@@ -79,7 +79,7 @@ export async function Login(req,res){
 
     return res.status(200).json({
         access_token,
-        user: { id: user.id, username: user.username },
+        user: { id: user.id, username: user.Username },
         message: 'Login Successful',
     });
 }
