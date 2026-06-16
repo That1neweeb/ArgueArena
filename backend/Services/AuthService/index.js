@@ -6,6 +6,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const app = express();
+app.use(express.json());
 const PORT = 3001;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -13,7 +14,7 @@ const __dirname = path.dirname(__filename);
 connection();
 
 dotenv.config(path.join(__dirname, '.env') );
-app.use('/auth',authRouter);
+app.use('/api/auth',authRouter);
 
 app.listen(PORT , () =>{
 console.log("Auth service is live on port:",{PORT});
