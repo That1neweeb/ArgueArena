@@ -12,7 +12,7 @@ router.post('/addTopic', createForumTopic);
 
 router.post('/:topicId/messages', createMessage);
 
-router.get('/get', getAllTopics);
+router.get('/getTopic', getAllTopics);
 
 router.get('/:topicId/messages', getTopicMessages);
 

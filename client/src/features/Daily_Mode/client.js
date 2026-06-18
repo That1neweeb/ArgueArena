@@ -5,45 +5,29 @@ export const socket = io("http://localhost:5000", {
   withCredentials:true
 });
 
-const DalyFeed = document.getElementById('feed');
-const userInput = document.getElementById('msg-input');
+// const DalyFeed = document.getElementById('feed');
+// const userInput = document.getElementById('msg-input');
 
-socket.on('client-total', (size)=>{
-    console.log(size);
-})
+// socket.on('client-total', (size)=>{
+//     console.log(size);
+// })
 
-function postMessage(){
-    if (userInput.value === '') return
+// // message sent by server
+// socket.on('server-msg', (data) => {
+//     DalyFeed.createElement += `
+//         <div class="msg-card">
+//         <div class="msg-text">${data.message}</div>
+//         <div class="msg-user">Placeholder</div>
+//         <div class ="date">${new Date(data.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+//         </div>
+//     `
+//     scrollToBottom()
+// })
 
-    // console.log(userInput.value)
-    const data = {
-        // name: token.Name
-        message :userInput.value,
-        dateTime : new Date()
-    }
-    // console.log(data)
-    
-    // client sends message
-    socket.emit('client-msg',data)
-    userInput.value = ''
-}
+// function scrollToBottom() {
+//   DalyFeed.scrollTop = DalyFeed.scrollHeight
+// }
 
-// message sent by server
-socket.on('server-msg', (data) => {
-    DalyFeed.innerHTML += `
-        <div class="msg-card">
-        <div class="msg-text">${data.message}</div>
-        <div class="msg-user">Placeholder</div>
-        <div class ="date">${new Date(data.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-        </div>
-    `
-    scrollToBottom()
-})
-
-function scrollToBottom() {
-  DalyFeed.scrollTop = DalyFeed.scrollHeight
-}
-
-function handleEnter(e){
-    if(e.key == 'Enter') postMessage()
-}
+// function handleEnter(e){
+//     if(e.key == 'Enter') postMessage()
+// }

@@ -1,0 +1,58 @@
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { ZonePlate, Player } from "./Lobby";
+import {
+  Grid,
+  Text,
+  Ring,
+  Float,
+  Points,
+  PointMaterial,
+} from "@react-three/drei";
+import * as THREE from "three"
+// ── SCENE ─────────────────────────────────────────
+export default function Scene({ onEnterZone }) {
+  return (
+    <>
+      {/* Fog */}
+      <fogExp2 attach="fog" color={0x120a00} density={0.055} />
+
+      {/* Lights */}
+      <ambientLight color={0xfff4e0} intensity={0.4} />  {/* soft warm skylight */}
+      
+      {/* warm sunlight */}
+      <directionalLight
+        color={0xfff5e0}                                  
+        intensity={1.2}
+        position={[0, 20, 20]}
+        castShadow
+      />
+      <pointLight color={0xffe4b5}  intensity={0.6} distance={30} position={[-5, 4, -5]} /> {/* soft fill */}
+
+      {/* Floor */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <planeGeometry args={[30, 30]} />
+        <meshStandardMaterial color={0x10AD08} roughness={0.95} metalness={0.05} />
+      </mesh>
+
+      {/* Grid */}
+      <gridHelper args={[30, 30, 0xe85d0422, 0xff9a3c11]} />
+
+      {/* Zone plates */}
+      {PLATE_DATA.map((pd) => (
+        <ZonePlate
+          key={pd.page}
+          label={pd.label}
+          color={pd.color}
+          pos={pd.pos}
+          onEnter={onEnterZone}
+        />
+      ))}
+
+      {/* Particles */}
+      <EmberParticles />
+
+      {/* Player (handles its own movement + camera + proximity) */}
+      <Player onProximityChange={onEnterZone} />
+    </>
+  );
+}

@@ -42,7 +42,7 @@ export async function createMessage(req, res) {
   }
 }
 
-export async function getAllTopics(req, res) {
+export async function getTodaysTopic(req, res) {
   try {
     const topics = await getTopic();
 
