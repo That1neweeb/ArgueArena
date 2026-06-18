@@ -1,15 +1,10 @@
 /**
- * DebateVerse — React Three Fiber conversion
- *
  * Dependencies (add to your project):
  *   npm install three @react-three/fiber @react-three/drei
- *
- * The original used vanilla Three.js imperative style inside a useEffect.
- * This version replaces all of that with declarative R3F JSX while keeping
- * every piece of game / UI logic identical.
  */
 
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import { Link, useNavigate } from 'react-router-dom'
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
   Grid,
@@ -21,10 +16,12 @@ import {
 } from "@react-three/drei";
 import * as THREE from "three";
 import "./Lobby.css";
+import HTPModal from "./HTP";
+import Scene from "./Scene";
 
 const PLATE_DATA = [
   { label: "STORY MODE",   color: 0xe85d04, pos: [-5, 1.2, -3], page: "story" },
-  { label: "DAILY DEBATE", color: 0xff9a3c, pos: [5,  1.2, -3],  page: "daily" },
+  { label: "DAILY DEBATE", color: 0xff9a3c, pos: [5,  1.2, -3],  page: "dailyFeed" },
   { label: "ACHIEVEMENTS", color: 0xffcb77, pos: [-5,  1.2, 4],  page: "achievements" },
   { label: "HOW TO PLAY",  color: 0xcc6600, pos: [5,  1.2,  4],  page: "htp" },
 ];
@@ -55,7 +52,7 @@ function EmberParticles() {
 }
 
 // ── ZONE PLATE ────────────────────────────────────
-function ZonePlate({ label, color, pos, onEnter }) {
+export function ZonePlate({ label, color, pos, onEnter }) {
   const meshRef  = useRef();
   const ringRef  = useRef();
   const glowRef  = useRef(); // emissive intensity ref
@@ -78,6 +75,7 @@ function ZonePlate({ label, color, pos, onEnter }) {
   useFrame(({ clock }) => {
     const t = clock.getElapsedTime();
     const idx = PLATE_DATA.findIndex((p) => p.label === label);
+    
     if (meshRef.current) {
       meshRef.current.position.y = pos[1] + Math.sin(t * 0.8 + idx * 1.2) * 0.18;
     }
@@ -129,7 +127,7 @@ function ZonePlate({ label, color, pos, onEnter }) {
 }
 
 // ── PLAYER ────────────────────────────────────────
-function Player({ onProximityChange }) {
+export function Player({ onProximityChange }) {
   const meshRef = useRef();
   const { camera } = useThree();
 
@@ -194,7 +192,7 @@ function Player({ onProximityChange }) {
     const labelEl = document.getElementById("proximity-label");
     if (labelEl) {
       if (nearest && nearest.dist < 3.2) {
-        labelEl.textContent   = `ENTER: ${nearest.pd.label}`;
+        labelEl.textContent   = ` ${nearest.pd.label}`;
         labelEl.style.opacity = "1";
 
         if (nearest.dist < 1.8 && currentProximity.current !== nearest.pd.page) {
@@ -227,54 +225,6 @@ function Player({ onProximityChange }) {
   );
 }
 
-// ── SCENE ─────────────────────────────────────────
-function Scene({ onEnterZone }) {
-  return (
-    <>
-      {/* Fog */}
-      <fogExp2 attach="fog" color={0x120a00} density={0.055} />
-
-      {/* Lights */}
-      <ambientLight color={0xfff4e0} intensity={0.4} />  {/* soft warm skylight */}
-      
-      {/* warm sunlight */}
-      <directionalLight
-        color={0xfff5e0}                                  
-        intensity={1.2}
-        position={[0, 20, 20]}
-        castShadow
-      />
-      <pointLight color={0xffe4b5}  intensity={0.6} distance={30} position={[-5, 4, -5]} /> {/* soft fill */}
-
-      {/* Floor */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <planeGeometry args={[30, 30]} />
-        <meshStandardMaterial color={0x10AD08} roughness={0.95} metalness={0.05} />
-      </mesh>
-
-      {/* Grid */}
-      <gridHelper args={[30, 30, 0xe85d0422, 0xff9a3c11]} />
-
-      {/* Zone plates */}
-      {PLATE_DATA.map((pd) => (
-        <ZonePlate
-          key={pd.page}
-          label={pd.label}
-          color={pd.color}
-          pos={pd.pos}
-          onEnter={onEnterZone}
-        />
-      ))}
-
-      {/* Particles */}
-      <EmberParticles />
-
-      {/* Player (handles its own movement + camera + proximity) */}
-      <Player onProximityChange={onEnterZone} />
-    </>
-  );
-}
-
 // ── LOBBY ─────────────────────────────────────────
 function Lobby({ onEnterZone }) {
   return (
@@ -294,47 +244,6 @@ function Lobby({ onEnterZone }) {
   );
 }
 
-
-// ── HTP MODAL ─────────────────────────────────────
-function HTPModal({ onClose }) {
-  return (
-    <div id="htp-modal" className="active">
-      <div className="htp-card">
-        <button className="modal-close" onClick={onClose}>✕</button>
-        <div className="htp-title">HOW TO PLAY</div>
-        <div className="htp-section">
-          <h3>Getting Started</h3>
-          <p>Use WASD or Arrow Keys to move your glowing cube around the lobby. Walk toward any zone plate to automatically enter that area. Back out at any time with the Back button.</p>
-        </div>
-        <div className="htp-divider" />
-        <div className="htp-section">
-          <h3>Story Mode</h3>
-          <p>Face off against AI opponents across escalating debate stages. Each stage presents a topic and three argument options — choose wisely. Your opponent responds dynamically to challenge your position.</p>
-        </div>
-        <div className="htp-divider" />
-        <div className="htp-section">
-          <h3>Daily Debate</h3>
-          <p>A new debate topic is generated every day. Pick a side — For or Against — and practice constructing your argument. Every day is a fresh chance to sharpen your reasoning.</p>
-        </div>
-        <div className="htp-divider" />
-        <div className="htp-section">
-          <h3>Scoring & Winning</h3>
-          <p>Strong arguments earn crowd favor. Consecutive good picks unlock streak bonuses and push you toward achievements. Unlock later stages by clearing earlier ones.</p>
-        </div>
-        <div className="htp-divider" />
-        <div className="htp-section">
-          <h3>Controls</h3>
-          <p>
-            <strong style={{ color: "var(--amber)" }}>WASD / Arrow Keys</strong> — Move your cube in the lobby<br />
-            <strong style={{ color: "var(--amber)" }}>Approach a zone</strong> — Automatically enter when close enough<br />
-            <strong style={{ color: "var(--amber)" }}>Back button</strong> — Return to lobby
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // Need to import a toast remove this later
 // ── TOAST ─────────────────────────────────────────
 function Toast({ message }) {
@@ -350,6 +259,7 @@ export default function DebateVerse() {
   const [activePage,  setActivePage]  = useState(null);
   const [toast,       setToast]       = useState("");
   const toastTimer = useRef(null);
+  const navigate = useNavigate();
 
   const showToast = useCallback((msg) => {
     setToast(msg);
@@ -357,7 +267,10 @@ export default function DebateVerse() {
     toastTimer.current = setTimeout(() => setToast(""), 3000);
   }, []);
 
-  const handleEnterZone = useCallback((page) => setActivePage(page), []);
+  const handleEnterZone = (page) => {
+    if (page === "htp") { setActivepage("htp"); return;}
+    navigate('/'+ page);  
+  };
 
   const handleBack = () => {
     setActivePage(null);
