@@ -27,7 +27,7 @@ const PLATE_DATA = [
 ];
 
 // ── PARTICLES ─────────────────────────────────────
-function EmberParticles() {
+export function EmberParticles() {
   const positions = useMemo(() => {
     const arr = new Float32Array(280 * 3);
     for (let i = 0; i < 280; i++) {
@@ -268,7 +268,7 @@ export default function DebateVerse() {
   }, []);
 
   const handleEnterZone = (page) => {
-    if (page === "htp") { setActivepage("htp"); return;}
+    if (page === "htp") { setActivePage("htp"); return;}
     navigate('/'+ page);  
   };
 

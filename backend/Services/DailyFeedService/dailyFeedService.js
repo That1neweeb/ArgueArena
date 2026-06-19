@@ -23,13 +23,15 @@ export async function addMessage(topicId, userId, text, time) {
 }
 
 export async function getTopic() {
-  const snapshot = await db.collection('forums').get();
+  const snapshot = await db.collection('forums')
+    .orderBy('createdAt', 'desc')
+    .limit(1)
+    .get();
 
-  return snapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  }));
-  
+  if (snapshot.empty) return null;
+
+  const doc = snapshot.docs[0];
+  return { id: doc.id, ...doc.data() };
 }
 
 export async function getMessages(topicId) {

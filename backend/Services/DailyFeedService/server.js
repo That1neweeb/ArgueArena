@@ -23,7 +23,7 @@ const io = new Server(server,{
 
 let socketsConnected = new Set();
 
-app.use(express.static(path.join(__dirname, '..','client')));
+// app.use(express.static(path.join(__dirname, '..','client')));
 
 app.use('/forums',forumRoutes);
 

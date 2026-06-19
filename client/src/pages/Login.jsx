@@ -82,7 +82,7 @@ export default function Login() {
           <div className="game-tagline">[ where arguments become battles ]</div>
 
           <div className="coin-insert">
-            <div className="coin-text">⬛ INSERT COIN TO CONTINUE ⬛</div>
+            {/* <div className="coin-text">⬛ INSERT COIN TO CONTINUE ⬛</div> */}
             <div className="player-select">PLAYER LOGIN</div>
           </div>
 
