@@ -2,5 +2,7 @@
 *.docx
 node_modules
 # Ignore Firebase service account key files
-/Daily_Mode/server/serviceAccountKey.json
-*/.env
+
+.env
+# Ignore AuthService .env file
+/backend/Services/AuthService/.env

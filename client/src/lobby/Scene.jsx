@@ -9,8 +9,19 @@ import {
   PointMaterial,
 } from "@react-three/drei";
 import * as THREE from "three"
+import { EmberParticles } from "./components/Emberparticles";
+
+
+
 // ── SCENE ─────────────────────────────────────────
 export default function Scene({ onEnterZone }) {
+  const PLATE_DATA = [
+  { label: "STORY MODE",   color: 0xe85d04, pos: [-5, 1.2, -3], page: "story" },
+  { label: "DAILY DEBATE", color: 0xff9a3c, pos: [5,  1.2, -3],  page: "dailyFeed" },
+  { label: "ACHIEVEMENTS", color: 0xffcb77, pos: [-5,  1.2, 4],  page: "achievements" },
+  { label: "HOW TO PLAY",  color: 0xcc6600, pos: [5,  1.2,  4],  page: "htp" },
+];
+
   return (
     <>
       {/* Fog */}

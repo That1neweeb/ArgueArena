@@ -2,7 +2,7 @@ import express from 'express';
 import {
   createForumTopic,
   createMessage,
-  getAllTopics,
+  getTodaysTopic,
   getTopicMessages
 } from '../controller/forumController.js';
 
@@ -12,7 +12,7 @@ router.post('/addTopic', createForumTopic);
 
 router.post('/:topicId/messages', createMessage);
 
-router.get('/getTopic', getAllTopics);
+router.get('/getTopic', getTodaysTopic);
 
 router.get('/:topicId/messages', getTopicMessages);
 
