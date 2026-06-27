@@ -5,7 +5,7 @@ export const createClient = (baseURL) => {
 
   //Add token automatically
   client.interceptors.request.use((config) => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("access_token");
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -16,14 +16,16 @@ export const createClient = (baseURL) => {
 
   // Central error handling
   client.interceptors.response.use(
-    (response) => response,
-    (error) => {
+    (res) => res,
+    (err) => {
+      
       const message =
-        error.response?.data?.message ||
-        error.response?.data?.error ||
-        "Server error";
-
-      return Promise.reject(new Error(message));
+        err.response?.data?.message ||
+        err.response?.data?.err ||
+        "Server err"; 
+      
+      err.message = message;
+      return Promise.reject(err);
     }
   );
 

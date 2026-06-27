@@ -1,18 +1,20 @@
 import authClient  from '../serviceClient/auth.Client.js';
 
-export const login = async ({ email, password }) => {
-  const response = await authClient.post('/auth/login', { email, password });
-  return response.data;
+export const login = async (form) => {
+  const { email, password } = form;
+  const res = await authClient.post('/api/auth/login', { email, password });
+  return res;
 };
 
-export const register = async ({ username, email, password, cpassword }) => {
-  const response = await authClient.post('/auth/register', {
+export const register = async (form) => {
+  const  { username, email, password, cpassword } = form;
+  const res = await authClient.post('/api/auth/register', {
     username,
     email,
     password,
     cpassword,
   });
-  return response.data;
+  return res.data;
 };
 
 const authService = {

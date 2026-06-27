@@ -169,6 +169,36 @@ body::before {
 }
 .field-wrap:focus-within .field-icon { color: var(--cyan); }
 
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: none;
+  color: rgba(255,255,255,0.72);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.2s;
+}
+.password-toggle:hover,
+.password-toggle:focus {
+  color: var(--cyan);
+}
+.password-toggle:focus {
+  outline: 1px dotted rgba(0,240,255,0.75);
+  outline-offset: 4px;
+}
+
+.field-wrap.password-field .field-input {
+  padding-right: 84px;
+}
+
 .field-error {
   font-family: 'Share Tech Mono', monospace;
   font-size: 0.62rem; color: var(--red);

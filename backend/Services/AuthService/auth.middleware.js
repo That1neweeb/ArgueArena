@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { decode } from 'node:punycode';
 
 export async function verifyToken(req, res, next) {
     try {
@@ -11,8 +12,11 @@ export async function verifyToken(req, res, next) {
         }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-        req.user = decoded;
+        console.log(decoded);
+        req.user = {
+            ...decoded,
+            username: decoded.username,
+        };
 
         next();
     } catch (error) {
@@ -36,7 +40,8 @@ export async function isAuthenticated(req,res,next) {
 
      req.user = {
         id : decode.id,
-        email: decode.email
+        email: decode.email,
+        username: decode.username
     }
 
     next();

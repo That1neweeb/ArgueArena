@@ -1,18 +1,18 @@
 import express from 'express';
 import {
-  createForumTopic,
   createMessage,
-  getTodaysTopic,
-  getTopicMessages
+  getTopicMessages,
+  getCurrentTopic,
 } from '../controller/forumController.js';
+import { verifyToken } from '../../AuthService/auth.middleware.js';
 
 const router = express.Router();
 
-router.post('/addTopic', createForumTopic);
+// router.post('/addTopic', createForumTopic);
 
-router.post('/:topicId/messages', createMessage);
+// router.post('/:topicId/messages',verifyToken, createMessage);
 
-router.get('/getTopic', getTodaysTopic);
+router.get('/getTopic', getCurrentTopic);
 
 router.get('/:topicId/messages', getTopicMessages);
 

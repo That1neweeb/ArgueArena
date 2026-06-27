@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import useAuthCanvas from '../hooks/useAuthCanvas';
 import useToast from '../hooks/useToast';
 import '../styles/auth-arcade.css';
+import { register as registerAPI } from '../serviceLayer/authService';
 
 const STRENGTH_COLORS = ['#ff2244','#ff6a00','#00f0ff','#00ff88'];
 const STRENGTH_LABELS = [
@@ -31,10 +32,12 @@ export default function Register() {
   const { toast, showToast } = useToast();
 
   const [form, setForm] = useState({
-    username: '', email: '', password: '', cpassword: '', terms: false,
+    username: '', email: '', password: '', cpassword: '', 
   });
   const [errors, setErrors]   = useState({});
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showCPassword, setShowCPassword] = useState(false);
 
   const strength = getStrength(form.password);
 
@@ -56,9 +59,6 @@ export default function Register() {
       errs.password = 'Must be 8+ chars with uppercase, number & special char';
     if (form.password !== form.cpassword)
       errs.cpassword = 'Passwords do not match';
-    if (!form.terms)
-      errs.terms = 'Accept the arena rules to continue';
-
     return errs;
   }
 
@@ -69,28 +69,17 @@ export default function Register() {
 
     setLoading(true);
     try {
-      const res = await fetch('/api/auth/register', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({
-          username:  form.username,
-          email:     form.email,
-          password:  form.password,
-          cpassword: form.cpassword,
-        }),
-      });
-      const data = await res.json();
-
-      if (!res.ok) {
-        showToast(data.message || 'Registration failed', 'error');
-        if (data.message?.toLowerCase().includes('exists'))
-          setErrors({ email: 'This email is already registered' });
-      } else {
+      const res = await registerAPI(form);
+      console.log(res)
+      const data = await res.data;
         showToast('ACCOUNT CREATED — ENTER THE ARENA', 'success');
         setTimeout(() => navigate('/login'), 1500);
-      }
     } catch (err) {
       showToast('CONNECTION ERROR — TRY AGAIN', 'error');
+      showToast(err.message || 'Registration failed', 'error');
+        if (err.message?.toLowerCase().includes('exists'))
+          setErrors({ email: 'This email is already registered' });
+
     } finally {
       setLoading(false);
     }
@@ -147,15 +136,23 @@ export default function Register() {
 
               <div className="field">
                 <label className="field-label" htmlFor="password">password</label>
-                <div className="field-wrap">
+                <div className="field-wrap password-field">
                   <input
                     className={`field-input${errors.password ? ' has-error' : ''}`}
-                    type="password" id="password" name="password"
+                    type={showPassword ? 'text' : 'password'} id="password" name="password"
                     placeholder="min 8 chars"
                     autoComplete="new-password"
                     value={form.password} onChange={handleChange}
                   />
                   <span className="field-icon">🔒</span>
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    aria-label={showPassword ? 'Hide password' : 'View password'}
+                    onClick={() => setShowPassword(value => !value)}
+                  >
+                    {showPassword ? 'HIDE' : 'VIEW'}
+                  </button>
                 </div>
                 <div className="strength-bar">
                   {[1,2,3,4].map(i => (
@@ -178,33 +175,26 @@ export default function Register() {
 
               <div className="field">
                 <label className="field-label" htmlFor="cpassword">confirm password</label>
-                <div className="field-wrap">
+                <div className="field-wrap password-field">
                   <input
                     className={`field-input${errors.cpassword ? ' has-error' : ''}`}
-                    type="password" id="cpassword" name="cpassword"
+                    type={showCPassword ? 'text' : 'password'} id="cpassword" name="cpassword"
                     placeholder="repeat password"
                     autoComplete="new-password"
                     value={form.cpassword} onChange={handleChange}
                   />
                   <span className="field-icon">🔒</span>
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    aria-label={showCPassword ? 'Hide password' : 'View password'}
+                    onClick={() => setShowCPassword(value => !value)}
+                  >
+                    {showCPassword ? 'HIDE' : 'VIEW'}
+                  </button>
                 </div>
                 <div className="field-error">{errors.cpassword}</div>
               </div>
-
-              <div className="terms-row">
-                <input
-                  type="checkbox" className="terms-check"
-                  id="terms" name="terms"
-                  checked={form.terms} onChange={handleChange}
-                />
-                <label className="terms-text" htmlFor="terms">
-                  I accept the <a href="#">Arena Rules</a> and <a href="#">Privacy Policy</a>
-                </label>
-              </div>
-              <div className="field-error" style={{ marginBottom: '10px' }}>
-                {errors.terms}
-              </div>
-
               <button type="submit" className="submit-btn magenta-btn" disabled={loading}>
                 {loading
                   ? <><span className="spinner" />CREATING ACCOUNT...</>

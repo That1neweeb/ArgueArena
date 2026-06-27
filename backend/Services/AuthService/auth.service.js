@@ -60,14 +60,6 @@ export async function Login(req,res){
 
     if (!password || password.trim() === '') return res.status(400).json({ message: 'Password is required' });
 
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
-        if (!passwordRegex.test(password)) {
-            console.log(password);
-            return res.status(400).json({ 
-                message: "Password must be 8+ chars, include uppercase, lowercase, number & special char" 
-            });
-        }
-
     const user = await User.findOne({ where: { email } });
     if (!user) return res.status(404).json({ message: 'User not found' });
 
@@ -76,7 +68,6 @@ export async function Login(req,res){
     if (!isMatch) return res.status(400).json({ message: 'Invalid password' });
 
     const access_token = generateToken(user);
-
     return res.status(200).json({
         access_token,
         user: { id: user.id, username: user.Username },

@@ -4,7 +4,7 @@ import React,{Suspense} from 'react';
 
 import ProtectedRoute from './ProtectedRoutes'
 
-const DailyFeed = React.lazy(()  => import("../features/Daily_Mode/DailyFeed"));
+const DailyFeed = React.lazy(()  => import('../features/Daily_Mode/DailyFeed'));
 const Login = React.lazy(()=> import('../pages/Login'));
 const Register = React.lazy(()=> import('../pages/Register')); 
 const Lobby = React.lazy(() => import('../lobby/Lobby'));

@@ -1,41 +1,22 @@
 import { useEffect, useRef, useState } from 'react';
 import './DailyFeed.css';
 import {socket } from './client.js';
-import { data } from 'react-router-dom';
+import { data, Link } from 'react-router-dom';
 import { useAuth } from '../../context/authContext.jsx';
-
-const initialMessages = [
-  {
-    id: 1,
-    text: 'Free transport would reduce traffic congestion significantly and help lower-income families access jobs.',
-    user: 'CivicVoice_42',
-  },
-  {
-    id: 2,
-    text: 'The infrastructure cost has to come from somewhere — likely higher taxes. Not a free lunch.',
-    user: 'UrbanPlanner_99',
-  },
-  {
-    id: 3,
-    text: 'Cities like Tallinn tried this. Ridership went up but funding became unsustainable long term.',
-    user: 'PolicyWatcher',
-  },
-];
-
-const topicText = 'Should public transport be free for all citizens?';
+import { getMessages, getTopic } from '../../serviceLayer/dailyFeedService.js';
 
 export default function App() {
-  console.log("Daily feed rendered");
-  const [messages, setMessages] = useState(initialMessages);
+  const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState('');
   const feedRef = useRef(null);
   const {user} = useAuth();
-  const [topic,setTopic] = useState(null);
+  const [topic  ,setTopic] = useState('');
+  const [userCount,setCount] = useState(null);
 
   useEffect(() => {
-
+// socket functions 
     socket.on('client-total',(size) => {
-      console.log(size)
+      setCount(size);
     });
 
     socket.on('server-msg',(message) => {
@@ -44,12 +25,25 @@ export default function App() {
       ]);
     })
 
-    setTopic(1);
-// Call api here for getting topic ----------  
-
-    if (feedRef.current) {
+    // ------------
+    async function fetchForum() {
+      try{
+        const data = await getTopic(); 
+        console.log(data.topic.id);
+        setTopic(data.topic);
+        fetchMessages(data.topic.id);
+      }
+      catch(err){
+          console.log(err.message);
+      }
+    }
+    
+    if (feedRef.current) {  
       feedRef.current.scrollTop = feedRef.current.scrollHeight;
     }
+
+    // fetch the funcs once 
+    fetchForum();
 
     return () => {
       socket.off('client-total')
@@ -57,28 +51,41 @@ export default function App() {
     }
   }, []);
 
-
+async function fetchMessages(topicId) {
+      try{
+        const data = await getMessages(topicId);
+        setMessages(Array.isArray(data.messages) ? data.messages : []);
+      }
+      catch(err){
+        console.log(err.message);
+      }
+      
+    }
 
   const postMessage = () => {
     if (!message.trim()) return;
-
+    console.log(user.username)
     const newMessage = {
-        id: user.id,
+        user_id: user.id,
+        username: user.username,
         text: message.trim(),
-        topic_id: topic_id,
+        topic_id: topic.id,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     }
 
     socket.emit('client-msg',newMessage, (response) => {
       if(!response.success){
         console.error(response.error);
+        return
+        // add toast to notify user message not sent
       }
+        setMessages((prevMessages) => [
+        ...prevMessages,newMessage,
+      ]);
+      setMessage('');
     });
 
-    setMessages((prevMessages) => [
-      ...prevMessages,newMessage,
-    ]);
-    setMessage('');
+    
 
   };
 
@@ -92,18 +99,30 @@ export default function App() {
   return (
     <div className="arena-wrap">
       <div className="arena-header">
-        <div className="label">Today's Topic</div>
-        <div className="topic" id="topic-text">{topicText}</div>
+          <div className="label">Today's Topic</div>
+          <div className="topic" id="topic-text">{topic.title}</div>
+        <Link to={'/lobby'}><button >Back</button></Link>
       </div>
+      
 
       <div className="arena-feed" id="feed" ref={feedRef}>
-        {messages.map((msg) => (
-          <div className="msg-card" key={msg.id}>
-            <div className="msg-text">{msg.text}</div>
-            <div className={`msg-user${msg.user === 'You' ? ' you' : ''}`}>{msg.user}</div>
-            {msg.time && <div className="date">{msg.time}</div>}
-          </div>
-        ))}
+        {messages.length === 0 ? (
+          <div className="no-messages">No messages yet</div>
+        ) : (
+          messages.map((msg) => {
+            const senderName = msg.username;
+            const isCurrentUser = senderName === user.username ;
+            const sentAt = msg.sent_at || msg.time;
+
+            return (
+              <div className="msg-card" key={msg.id}>
+                <div className="msg-text">{msg.text}</div>
+                <div className={`msg-user${isCurrentUser ? ' you' : ''}`}>{isCurrentUser ? 'You' : senderName}</div>
+                {sentAt && <div className="date">{sentAt}</div>}
+              </div>
+            );
+          })
+        )}
       </div>
 
       <div className="arena-footer">
