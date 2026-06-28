@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuthCanvas from '../hooks/useAuthCanvas';
+// import { useAuth } from '../context/authContext';
 import useToast from '../hooks/useToast';
 import '../styles/auth-arcade.css';
 import { login as loginAPI } from '../serviceLayer/authService';
@@ -12,6 +13,7 @@ export default function Login() {
   const canvasRef = useAuthCanvas('0,240,255');
   const { toast, showToast } = useToast();
   const { login } = useAuth();
+  // const { login } = useAuth();
 
   const [form, setForm]   = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({});
