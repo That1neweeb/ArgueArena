@@ -17,7 +17,6 @@ try {
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: 'https://arguearena-9fdee-default-rtdb.asia-southeast1.firebasedatabase.app'
 });
 
 const db = admin.firestore();
