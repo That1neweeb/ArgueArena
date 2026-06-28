@@ -3,7 +3,7 @@ import axios from "axios";
 export const createClient = (baseURL) => {
   const client = axios.create({ baseURL });
 
-  //Add token automatically
+  // Add token automatically
   client.interceptors.request.use((config) => {
     const token = localStorage.getItem("access_token");
 
