@@ -1,10 +1,8 @@
-/**
- * Dependencies (add to your project):
- *   npm install three @react-three/fiber @react-three/drei
- */
+
 
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from "../context/authContext.jsx";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
   Grid,
@@ -17,9 +15,10 @@ import {
 import * as THREE from "three";
 import "./Lobby.css";
 import HTPModal from "./HTP";
+import StoryModeModal from "../features/StoryMode/StoryModeModal";
 import Scene from "./Scene";
 
-const PLATE_DATA = [
+export const PLATE_DATA = [
   { label: "STORY MODE",   color: 0xe85d04, pos: [-5, 1.2, -3], page: "story" },
   { label: "DAILY DEBATE", color: 0xff9a3c, pos: [5,  1.2, -3],  page: "dailyFeed" },
   { label: "ACHIEVEMENTS", color: 0xffcb77, pos: [-5,  1.2, 4],  page: "achievements" },
@@ -152,7 +151,7 @@ export function Player({ onProximityChange }) {
 
   useFrame(({ clock }) => {
     const t     = clock.getElapsedTime();
-    const speed = 0.05;
+    const speed = 0.1;
     const k     = keys.current;
 
     if (k["ArrowLeft"]  || k["a"] || k["A"]) vel.current.x -= speed;
@@ -256,6 +255,7 @@ function Toast({ message }) {
 
 // ── ROOT ──────────────────────────────────────────
 export default function DebateVerse() {
+  const { user } = useAuth();
   const [activePage,  setActivePage]  = useState(null);
   const [toast,       setToast]       = useState("");
   const toastTimer = useRef(null);
@@ -290,6 +290,7 @@ export default function DebateVerse() {
 
       {/* {activePage === "achievements" && <AchievementsPage onBack={handleBack} />} */}
       {activePage === "htp"          && <HTPModal onClose={handleBack} />}
+      {activePage === "story"        && <StoryModeModal onClose={handleBack} />}
 
       <Toast message={toast} />
     </>

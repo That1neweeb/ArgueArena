@@ -1,5 +1,6 @@
+import { useMemo } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { ZonePlate, Player } from "./Lobby";
+import { ZonePlate, Player, PLATE_DATA } from "./Lobby";
 import {
   Grid,
   Text,
