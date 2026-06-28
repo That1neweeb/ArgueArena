@@ -1,13 +1,58 @@
-import  {Route,Routes,Outlet,Navigate} from 'react-router-dom';
-import React,{Suspense} from 'react';
+// import  {Route,Routes,Outlet,Navigate} from 'react-router-dom';
+// import React,{Suspense} from 'react';
 
 
-import ProtectedRoute from './ProtectedRoutes'
+// import ProtectedRoute from './ProtectedRoutes'
 
-const DailyFeed = React.lazy(()  => import('../features/Daily_Mode/DailyFeed'));
-const Login = React.lazy(()=> import('../pages/Login'));
-const Register = React.lazy(()=> import('../pages/Register')); 
+// const DailyFeed = React.lazy(()  => import('../features/Daily_Mode/DailyFeed'));
+// const Login = React.lazy(()=> import('../pages/Login'));
+// const Register = React.lazy(()=> import('../pages/Register')); 
+// const Lobby = React.lazy(() => import('../lobby/Lobby'));
+// // const StoryMode = React.lazy(() => import('../features/StoryMode/StoryMode'));
+// const BattleScreen = React.lazy(() => import('../features/StoryMode/Battlescreen.jsx'));
+// const RoundSelector = React.lazy(() => import('../features/StoryMode/RoundSelector.jsx'));
+// const RoundResult = React.lazy(() => import('../features/StoryMode/RoundResult.jsx'));
+// const ChapterComplete = React.lazy(() => import('../features/StoryMode/ChapterComplete.jsx'));
+// const StoryProfile = React.lazy(() => import('../features/StoryMode/StoryProfile.jsx'));
+// const StoryMode = React.lazy(() => import('../features/StoryMode/StoryMode'));
+// const Achievements = React.lazy(() => import('../pages/Achievements'));
+
+// export default function AppRoutes(){
+//         return (
+//         <Suspense fallback={<div>Loading...</div>}>
+//             <Routes>
+//                     <Route element={<ProtectedRoute/>}>
+//                         <Route path='/dailyFeed' element={<DailyFeed/>}></Route>
+//                 <Route path="/" element={<Lobby />}></Route>
+//                 <Route path="/lobby" element={<Lobby />}></Route>
+//                 <Route path="/story" element={<Suspense fallback={<div>Loading Story Mode...</div>}><StoryMode /></Suspense>} />
+//                 <Route path="/story/profile" element={<Suspense fallback={<div>Loading Profile...</div>}><StoryProfile /></Suspense>} />
+//                 <Route path="/story/chapter/:chapterId" element={<Suspense fallback={<div>Loading Rounds...</div>}><RoundSelector /></Suspense>} />
+//                 <Route path="/story/chapter/:chapterId/complete" element={<Suspense fallback={<div>Loading...</div>}><ChapterComplete /></Suspense>} />
+//                 <Route path="/story/round-result" element={<Suspense fallback={<div>Loading Result...</div>}><RoundResult /></Suspense>} />
+//                 <Route path="/story/battle/:id" element={<Suspense fallback={<div>Loading Battle...</div>}><BattleScreen /></Suspense>} />
+//                     </Route>
+//                     <Route path='/story' element={<StoryMode/>}></Route>
+//                 <Route path='/achievements' element={<Achievements/>}></Route>
+                
+                    
+//                     <Route path='/login' element={<Login/>}></Route>
+//                     <Route path='/register'  element={<Register/>}></Route>
+//                 </Routes>
+// </Suspense>
+//     )
+// }
+
+import { Route, Routes } from 'react-router-dom';
+import React, { Suspense } from 'react';
+
+import ProtectedRoute from './ProtectedRoutes';
+
+const DailyFeed = React.lazy(() => import('../features/Daily_Mode/DailyFeed'));
+const Login = React.lazy(() => import('../pages/Login'));
+const Register = React.lazy(() => import('../pages/Register'));
 const Lobby = React.lazy(() => import('../lobby/Lobby'));
+
 const StoryMode = React.lazy(() => import('../features/StoryMode/StoryMode'));
 const BattleScreen = React.lazy(() => import('../features/StoryMode/Battlescreen.jsx'));
 const RoundSelector = React.lazy(() => import('../features/StoryMode/RoundSelector.jsx'));
@@ -15,25 +60,78 @@ const RoundResult = React.lazy(() => import('../features/StoryMode/RoundResult.j
 const ChapterComplete = React.lazy(() => import('../features/StoryMode/ChapterComplete.jsx'));
 const StoryProfile = React.lazy(() => import('../features/StoryMode/StoryProfile.jsx'));
 
-export default function AppRoutes(){
-    return (
-        <Routes>
-            <Route element={<ProtectedRoute/>}>
-                <Route path='/dailyFeed' element={<DailyFeed/>}></Route>
-                <Route path="/" element={<Lobby />}></Route>
-                <Route path="/lobby" element={<Lobby />}></Route>
-                <Route path="/story" element={<Suspense fallback={<div>Loading Story Mode...</div>}><StoryMode /></Suspense>} />
-                <Route path="/story/profile" element={<Suspense fallback={<div>Loading Profile...</div>}><StoryProfile /></Suspense>} />
-                <Route path="/story/chapter/:chapterId" element={<Suspense fallback={<div>Loading Rounds...</div>}><RoundSelector /></Suspense>} />
-                <Route path="/story/chapter/:chapterId/complete" element={<Suspense fallback={<div>Loading...</div>}><ChapterComplete /></Suspense>} />
-                <Route path="/story/round-result" element={<Suspense fallback={<div>Loading Result...</div>}><RoundResult /></Suspense>} />
-                <Route path="/story/battle/:id" element={<Suspense fallback={<div>Loading Battle...</div>}><BattleScreen /></Suspense>} />
-            </Route>
-             
-            
-            <Route path='/login' element={<Login/>}></Route>
-            <Route path='/register'  element={<Register/>}></Route>
-        </Routes>
-    )
-}
+const Achievements = React.lazy(() => import('../pages/Achievements'));
 
+export default function AppRoutes() {
+  return (
+    
+      <Routes>
+
+        <Route element={<ProtectedRoute />}>
+          <Route path="/" element={<Lobby />} />
+          <Route path="/lobby" element={<Lobby />} />
+          <Route path="/dailyFeed" element={<DailyFeed />} />
+
+          <Route
+            path="/story"
+            element={
+              <Suspense fallback={<div>Loading Story Mode...</div>}>
+                <StoryMode />
+              </Suspense>
+            }
+          />
+
+          <Route
+            path="/story/profile"
+            element={   
+              <Suspense fallback={<div>Loading Profile...</div>}>
+                <StoryProfile />
+              </Suspense>
+            }
+          />
+
+          <Route
+            path="/story/chapter/:chapterId"
+            element={
+              <Suspense fallback={<div>Loading Rounds...</div>}>
+                <RoundSelector />
+              </Suspense>
+            }
+          />
+
+          <Route
+            path="/story/chapter/:chapterId/complete"
+            element={
+              <Suspense fallback={<div>Loading...</div>}>
+                <ChapterComplete />
+              </Suspense>
+            }
+          />
+
+          <Route
+            path="/story/round-result"
+            element={
+              <Suspense fallback={<div>Loading Result...</div>}>
+                <RoundResult />
+              </Suspense>
+            }
+          />
+
+          <Route
+            path="/story/battle/:id"
+            element={
+              <Suspense fallback={<div>Loading Battle...</div>}>
+                <BattleScreen />
+              </Suspense>
+            }
+          />
+
+          <Route path="/achievements" element={<Achievements />} />
+        </Route>
+
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+
+      </Routes>
+  );
+}
