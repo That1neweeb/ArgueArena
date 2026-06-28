@@ -1,0 +1,601 @@
+/* ============================
+   ACHIEVEMENT PAGE
+============================ */
+
+.achievement-page {
+    min-height: 100vh;
+    padding: 40px;
+    background:
+        radial-gradient(circle at top, rgba(255,140,40,.18), transparent 45%),
+        linear-gradient(180deg,#090909,#111111,#181818);
+    color: white;
+    font-family: "Poppins", sans-serif;
+}
+
+/* ============================
+   HEADER
+============================ */
+
+.achievement-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:40px;
+}
+
+.back-button{
+
+    background:#e85d04;
+    color:white;
+
+    border:none;
+
+    padding:12px 22px;
+
+    border-radius:12px;
+
+    cursor:pointer;
+
+    font-size:15px;
+
+    transition:.25s;
+}
+
+.back-button:hover{
+
+    background:#ff8b28;
+
+    transform:translateY(-3px);
+
+}
+
+.achievement-header h1{
+
+    color:#ff9d43;
+
+    letter-spacing:3px;
+
+    font-size:15px;
+
+    margin:0;
+
+}
+
+.achievement-header h2{
+
+    margin-top:5px;
+
+    font-size:38px;
+
+    font-weight:700;
+
+}
+
+/* ============================
+   PROGRESS
+============================ */
+
+.overall-progress{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    background:rgba(255,255,255,.05);
+
+    backdrop-filter:blur(14px);
+
+    padding:28px;
+
+    border-radius:18px;
+
+    margin-bottom:35px;
+
+    border:1px solid rgba(255,255,255,.08);
+
+}
+
+.progress-left h3{
+
+    color:#bdbdbd;
+
+    margin-bottom:8px;
+
+}
+
+.progress-left h4{
+
+    font-size:30px;
+
+}
+
+.progress-right{
+
+    width:45%;
+
+}
+
+.progress-bar{
+
+    height:14px;
+
+    border-radius:20px;
+
+    background:#2b2b2b;
+
+    overflow:hidden;
+
+}
+
+.progress-fill{
+
+    height:100%;
+
+    border-radius:20px;
+
+    background:linear-gradient(
+        90deg,
+        #ff6b00,
+        #ffb347
+    );
+
+    transition:1s;
+
+}
+
+.progress-right span{
+
+    display:block;
+
+    margin-top:10px;
+
+    text-align:right;
+
+    font-size:15px;
+
+    color:#ffb347;
+
+}
+
+/* ============================
+   STATS
+============================ */
+
+.stats-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(4,1fr);
+
+    gap:22px;
+
+    margin-bottom:45px;
+
+}
+
+.stat-card{
+
+    background:rgba(255,255,255,.04);
+
+    border-radius:16px;
+
+    border:1px solid rgba(255,255,255,.08);
+
+    padding:25px;
+
+    transition:.3s;
+
+    text-align:center;
+
+}
+
+.stat-card:hover{
+
+    transform:translateY(-6px);
+
+    border-color:#ff8d32;
+
+    box-shadow:0 0 25px rgba(255,145,0,.18);
+
+}
+
+.stat-card h4{
+
+    color:#c5c5c5;
+
+    margin-bottom:18px;
+
+}
+
+.stat-card span{
+
+    font-size:30px;
+
+    font-weight:700;
+
+    color:#ff9d43;
+
+}
+
+/* ============================
+   CATEGORY
+============================ */
+
+.category-container{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:45px;
+
+}
+
+.category-title{
+
+    font-size:24px;
+
+    font-weight:700;
+
+    margin-bottom:20px;
+
+    color:#ff9d43;
+
+    border-left:5px solid #ff7a00;
+
+    padding-left:15px;
+
+}
+
+.achievement-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+
+    gap:25px;
+
+}
+
+/* ============================
+   ACHIEVEMENT CARD
+============================ */
+
+.achievement-card{
+
+    position:relative;
+
+    overflow:hidden;
+
+    min-height:260px;
+
+    background:rgba(255,255,255,.04);
+
+    border:1px solid rgba(255,255,255,.08);
+
+    border-radius:18px;
+
+    padding:22px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:space-between;
+
+    transition:.35s ease;
+
+    backdrop-filter:blur(10px);
+
+}
+
+.achievement-card:hover{
+
+    transform:translateY(-8px);
+
+    border-color:#ff8d32;
+
+    box-shadow:
+        0 15px 35px rgba(255,145,0,.15),
+        0 0 25px rgba(255,145,0,.12);
+
+}
+
+/* ============================
+   RARITY STRIP
+============================ */
+
+.rarity-strip{
+
+    position:absolute;
+
+    top:0;
+
+    left:0;
+
+    width:100%;
+
+    height:5px;
+
+}
+
+/* ============================
+   ICON
+============================ */
+
+.achievement-icon{
+
+    font-size:52px;
+
+    margin-bottom:15px;
+
+}
+
+/* ============================
+   TITLE
+============================ */
+
+.achievement-card h3{
+
+    font-size:20px;
+
+    margin-bottom:12px;
+
+    line-height:1.3;
+
+}
+
+/* ============================
+   DESCRIPTION
+============================ */
+
+.achievement-card p{
+
+    color:#bfbfbf;
+
+    font-size:14px;
+
+    line-height:1.6;
+
+    margin-bottom:20px;
+
+}
+
+/* ============================
+   LOCKED CARD
+============================ */
+
+.achievement-card.locked{
+
+    opacity:.75;
+
+    filter:grayscale(.8);
+
+}
+
+.achievement-card.locked .achievement-icon{
+
+    font-size:44px;
+
+}
+
+.achievement-card.locked:hover{
+
+    transform:none;
+
+    border-color:rgba(255,255,255,.08);
+
+    box-shadow:none;
+
+}
+
+/* ============================
+   FOOTER AREA
+============================ */
+
+.achievement-bottom{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-top:auto;
+
+}
+
+/* ============================
+   XP BADGE
+============================ */
+
+.xp-badge{
+
+    background:rgba(255,145,0,.15);
+
+    color:#ffb347;
+
+    padding:8px 12px;
+
+    border-radius:999px;
+
+    font-size:12px;
+
+    font-weight:600;
+
+}
+
+/* ============================
+   RARITY BADGE
+============================ */
+
+.rarity-badge{
+
+    border:1px solid;
+
+    padding:8px 12px;
+
+    border-radius:999px;
+
+    font-size:12px;
+
+    font-weight:700;
+
+}
+
+/* ============================
+   UNLOCK DATE
+============================ */
+
+.unlock-date{
+
+    margin-top:18px;
+
+    color:#9f9f9f;
+
+    font-size:12px;
+
+    line-height:1.5;
+
+}
+
+/* ============================
+   UNLOCKED EFFECT
+============================ */
+
+.achievement-card.unlocked{
+
+    box-shadow:
+        inset 0 0 25px rgba(255,145,0,.03);
+
+}
+
+.achievement-card.unlocked:hover{
+
+    box-shadow:
+        0 15px 35px rgba(255,145,0,.18),
+        0 0 35px rgba(255,145,0,.15);
+
+}
+
+/* ============================
+   FOOTER
+============================ */
+
+.achievement-footer{
+
+    text-align:center;
+
+    margin-top:60px;
+
+    padding:30px;
+
+    color:#c5c5c5;
+
+    font-size:15px;
+
+}
+
+.achievement-footer span{
+
+    color:#ff9d43;
+
+    font-weight:700;
+
+}
+
+/* ============================
+   SCROLLBAR
+============================ */
+
+::-webkit-scrollbar{
+
+    width:8px;
+
+}
+
+::-webkit-scrollbar-track{
+
+    background:#111;
+
+}
+
+::-webkit-scrollbar-thumb{
+
+    background:#ff8d32;
+
+    border-radius:999px;
+
+}
+
+/* ============================
+   MOBILE
+============================ */
+
+@media (max-width:1000px){
+
+    .stats-grid{
+
+        grid-template-columns:repeat(2,1fr);
+
+    }
+
+}
+
+@media (max-width:768px){
+
+    .achievement-page{
+
+        padding:20px;
+
+    }
+
+    .achievement-header{
+
+        flex-direction:column;
+
+        align-items:flex-start;
+
+        gap:20px;
+
+    }
+
+    .overall-progress{
+
+        flex-direction:column;
+
+        gap:20px;
+
+    }
+
+    .progress-right{
+
+        width:100%;
+
+    }
+
+}
+
+@media (max-width:600px){
+
+    .stats-grid{
+
+        grid-template-columns:1fr;
+
+    }
+
+    .achievement-grid{
+
+        grid-template-columns:1fr;
+
+    }
+
+    .achievement-header h2{
+
+        font-size:30px;
+
+    }
+
+}
