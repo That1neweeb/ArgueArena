@@ -12,10 +12,10 @@ import storyService from "../../serviceLayer/storyService.js";
 
 // Achievement & Progress System
 import {
-  addBossKill,
+  defeatBoss,
   completeStage,
-  addPerfectScore,
-} from "../../Achievements/PlayerProgressManager";
+  perfectScore,
+} from "../../gameData/playerProgress.js";
 
 import { unlockAchievement } from "../Achievements/achievementManager";
 
@@ -146,10 +146,10 @@ if (scorePercentage >= 90) {
     unlockAchievement("critical");
 }
 
-// Perfect Argument
-if (scorePercentage === 100) {
-    unlockAchievement("perfect");
-}
+// // Perfect Argument
+// if (scorePercentage === 100) {
+//     unlockAchievement("perfect");
+// }
       setScore(nextScore);
       setNpcMood(result.expression || moodMap[result.quality] || "neutral");
       setDialogue(result.npcReply || "Your argument lands.");
@@ -181,12 +181,13 @@ if (scorePercentage === 100) {
       // completed stage
       completeStage(roundInfo.chapterId);
 
-      // defeated NPC
-      addBossKill();
+      // // defeated NPC
+      // addBossKill();
+      defeatBoss();
 
       // perfect score
       if (nextScore >= roundInfo.numberOfTurns * 2) {
-        addPerfectScore();
+        PerfectScore();
       }
 
     }
