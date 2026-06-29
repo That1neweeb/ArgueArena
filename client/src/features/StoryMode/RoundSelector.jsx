@@ -1,7 +1,21 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import storyService from "../../serviceLayer/storyService.js";
+import ZigzagMap from "./ZigzagMap.jsx";
 import "./StoryMode.css";
+
+const ROUND_TITLES = [
+  "Opening Statements",
+  "Core Arguments",
+  "Evidence & Data",
+  "Counterpoints",
+  "Ethical Dimensions",
+  "Public Policy",
+  "Economic Impact",
+  "Rebuttal Round",
+  "Final Push",
+  "Boss Battle",
+];
 
 export default function RoundSelector() {
   const { chapterId } = useParams();
@@ -27,22 +41,9 @@ export default function RoundSelector() {
         setRounds(
           roundLoads.map((entry, index) => ({
             roundNumber: index + 1,
-            title:
-              index === 9
-                ? "Boss Battle"
-                : [
-                    "Opening Statements",
-                    "Core Arguments",
-                    "Evidence and Data",
-                    "Counterpoints",
-                    "Ethical Dimensions",
-                    "Public Policy",
-                    "Economic Impact",
-                    "Rebuttal Round",
-                    "Final Push",
-                  ][index],
+            title: ROUND_TITLES[index],
             debateId: entry?.round?.debate?.id,
-            bossRound: entry?.round?.debate?.bossRound,
+            bossRound: entry?.round?.debate?.bossRound ?? false,
             passingScore: entry?.round?.debate?.passingScore,
           }))
         );
@@ -56,17 +57,49 @@ export default function RoundSelector() {
     if (chapterId) load();
   }, [chapterId]);
 
+  // Derive per-round status from chapter progress
+  const getRoundStatus = (round) => {
+    const currentRound = chapter?.progress?.currentRound ?? 1;
+    if (round.roundNumber < currentRound) return "completed";
+    if (round.roundNumber === currentRound) return "current";
+    if (round.roundNumber <= currentRound) return "unlocked";
+    return "locked";
+  };
+
+  // Map rounds → ZigzagMap items
+  const roundItems = rounds.map((round) => ({
+    id: round.roundNumber,
+    status: getRoundStatus(round),
+    displayNumber: round.roundNumber,
+    label: round.title,
+    sublabel: round.bossRound ? "Boss" : null,
+    disabled: !round.debateId,
+    _raw: round,
+  }));
+
   if (loading) {
-    return <div className="story-screen">Loading rounds...</div>;
+    return (
+      <div className="story-screen">
+        <div className="story-header">
+          <h1>Loading…</h1>
+          <p>Preparing your rounds.</p>
+        </div>
+      </div>
+    );
   }
 
   if (error) {
     return (
       <div className="story-screen">
-        <p>{error}</p>
-        <button className="story-btn" onClick={() => navigate("/story")}>
-          Back to map
-        </button>
+        <div className="story-header">
+          <h1>Chapter not found</h1>
+          <p>{error}</p>
+        </div>
+        <div className="story-actions">
+          <button className="story-btn" onClick={() => navigate("/story")}>
+            Back to map
+          </button>
+        </div>
       </div>
     );
   }
@@ -81,34 +114,7 @@ export default function RoundSelector() {
         )}
       </div>
 
-      <div className="chapter-grid">
-        {rounds.map((round) => {
-          const unlocked = round.roundNumber <= (chapter?.progress?.currentRound || 1);
-          return (
-            <button
-              key={round.roundNumber}
-              className={`chapter-card ${unlocked ? "unlocked" : "locked"}`}
-              disabled={!unlocked || !round.debateId}
-              onClick={() =>
-                navigate(`/story/battle/${round.debateId}`, {
-                  state: { chapterTitle: chapter?.title },
-                })
-              }
-            >
-              <div className="chapter-number">
-                Round {round.roundNumber}
-                {round.bossRound ? " • Boss" : ""}
-              </div>
-              <div className="chapter-title">{round.title}</div>
-              <div className="chapter-meta">
-                {unlocked ? "Enter debate" : "Locked"}
-              </div>
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="story-actions">
+      <div className="story-actions story-actions-top">
         <button className="story-btn" onClick={() => navigate("/story")}>
           Back to map
         </button>
@@ -116,6 +122,31 @@ export default function RoundSelector() {
           Profile
         </button>
       </div>
+
+      <ZigzagMap
+        items={roundItems}
+        onNodeClick={(item) =>
+          navigate(`/story/battle/${item._raw.debateId}`, {
+            state: { chapterTitle: chapter?.title },
+          })
+        }
+        nodeClass="round-node"
+        crestClass="round-crest"
+        numberClass="round-number"
+        labelClass="round-label"
+        containerClass="rounds-container"
+        svgClass="rounds-svg"
+        nodesClass="rounds-nodes"
+        rowClassLeft="map-row map-row--left"
+        rowClassRight="map-row map-row--right"
+        renderBadge={(item) =>
+          item._raw?.bossRound ? (
+            <span className="round-boss-star" aria-hidden="true">
+              ★ BOSS
+            </span>
+          ) : null
+        }
+      />
     </div>
   );
 }

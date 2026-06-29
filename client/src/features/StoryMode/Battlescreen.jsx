@@ -48,15 +48,17 @@ export default function BattleScreen() {
   }[npcMood] || npcIdle;
 
   const roundNumber = roundInfo?.roundNumber ?? "—";
-  const playerConfidence = roundInfo
-    ? Math.min(100, Math.max(0, Math.round((score / ((roundInfo.numberOfTurns || 10) * 2)) * 100)))
-    : 50;
-  const npcConfidence = Math.min(100, Math.max(0, 100 - playerConfidence));
   const xpDisplay = score * 8;
-  const playerLevel = Math.max(1, Math.floor(score / 4) + 1);
-  const npcLevel = roundInfo?.bossRound
-    ? Math.max(1, Number(roundNumber) || 1) + 2
-    : Math.max(1, Number(roundNumber) || 1);
+
+  const handleExitBattle = () => {
+    const confirmed = window.confirm(
+      "Exit this battle? Unsaved progress for this round will be lost."
+    );
+    if (confirmed) {
+      if (advanceTimer.current) clearTimeout(advanceTimer.current);
+      navigate("/story");
+    }
+  };
 
   const fetchTurn = async (debateId, currentTurn, { fullScreen = false } = {}) => {
     try {
@@ -173,6 +175,9 @@ export default function BattleScreen() {
   if (loading) {
     return (
       <div className="battle-screen battle-screen--status" style={{ backgroundImage: `url(${battleBg})` }}>
+        <button type="button" className="battle-exit-btn" onClick={handleExitBattle}>
+          ← Exit Battle
+        </button>
         <div className="battle-status-message">Loading battle...</div>
       </div>
     );
@@ -181,6 +186,9 @@ export default function BattleScreen() {
   if (error) {
     return (
       <div className="battle-screen battle-screen--status" style={{ backgroundImage: `url(${battleBg})` }}>
+        <button type="button" className="battle-exit-btn" onClick={handleExitBattle}>
+          ← Exit Battle
+        </button>
         <div className="battle-status-message">{error}</div>
       </div>
     );
@@ -192,6 +200,10 @@ export default function BattleScreen() {
 
   return (
     <div className="battle-screen" style={{ backgroundImage: `url(${battleBg})` }}>
+      <button type="button" className="battle-exit-btn" onClick={handleExitBattle}>
+        ← Exit Battle
+      </button>
+
       <div className="battle-layout">
         <header className="battle-hud">
           <div className="hud-cluster hud-cluster--left">
@@ -218,24 +230,8 @@ export default function BattleScreen() {
               <img src={npcImage} alt={npcName} />
             </div>
             <div className="combat-stats">
-              <div className="combat-header">
-                <span className="combat-name">{npcName}</span>
-                <span className="combat-role">{npcRole}</span>
-              </div>
-              <div className="stat-row">
-                <span className="stat-label">Confidence</span>
-                <div className="bar-track">
-                  <div
-                    className="bar-fill bar-fill--enemy"
-                    style={{ width: `${npcConfidence}%` }}
-                  />
-                </div>
-              </div>
-              <div className="combat-meta">
-                <span>Lv. {npcLevel}</span>
-                <span>Score —</span>
-                <span>XP —</span>
-              </div>
+              <span className="combat-name">{npcName}</span>
+              <span className="combat-role">{npcRole}</span>
             </div>
           </article>
 
@@ -262,24 +258,8 @@ export default function BattleScreen() {
               <img src={playerImg} alt="Player" />
             </div>
             <div className="combat-stats">
-              <div className="combat-header">
-                <span className="combat-name">You</span>
-                <span className="combat-role">Debater</span>
-              </div>
-              <div className="stat-row">
-                <span className="stat-label">Confidence</span>
-                <div className="bar-track">
-                  <div
-                    className="bar-fill bar-fill--player"
-                    style={{ width: `${playerConfidence}%` }}
-                  />
-                </div>
-              </div>
-              <div className="combat-meta">
-                <span>Lv. {playerLevel}</span>
-                <span>Score {score}</span>
-                <span>XP {xpDisplay}</span>
-              </div>
+              <span className="combat-name">You</span>
+              <span className="combat-score">Score {score}</span>
             </div>
           </article>
         </main>
