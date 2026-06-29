@@ -197,9 +197,10 @@ export default function BattleScreen() {
       const scorePercentage = (nextScore / maxPossibleScore) * 100;
 
       // Play correct / wrong SFX
-      if (result.earnedScore > 0) {
+      const quality = result.quality ?? 1;
+      if (quality === 2) {
         sounds.correctAnswer.play();
-      } else {
+      } else if (quality === 0) {
         sounds.wrongAnswer.play();
       }
 
