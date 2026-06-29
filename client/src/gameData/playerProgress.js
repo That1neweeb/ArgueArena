@@ -144,7 +144,10 @@ export function addStars(amount) {
 // Boss defeated
 // =======================================================
 
+export const perfectScore = 0;
+
 export function defeatBoss() {
+
 
     const progress = loadProgress();
 

@@ -15,10 +15,8 @@ export default function StoryProfile() {
       try {
         const [profileRes, achievementsRes] = await Promise.all([
           storyService.getProfile(),
-          storyService.getAchievements(),
         ]);
         setProfile(profileRes.profile);
-        setAchievements(achievementsRes.achievements || []);
       } catch (err) {
         setError(err.message || "Unable to load profile.");
       } finally {
@@ -69,20 +67,6 @@ export default function StoryProfile() {
           <strong>{(profile?.unlockedChapters || []).join(", ") || "1"}</strong>
         </div>
       </div>
-
-      {achievements.length > 0 && (
-        <div className="story-panel">
-          <h3 className="story-heading">Achievements</h3>
-          <ul className="story-achievement-list">
-            {achievements.map((item) => (
-              <li key={item.id}>
-                <strong>{item.title}</strong>
-                <span>{item.description}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
 
       <div className="story-actions">
         <button className="story-btn" onClick={() => navigate("/story")}>

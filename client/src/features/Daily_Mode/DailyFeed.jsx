@@ -36,7 +36,7 @@ export default function App() {
     async function fetchForum() {
       try{
         const data = await getTopic(); 
-        console.log(data.topic.id);
+        console.log(data.topic.name);
         setTopic(data.topic);
         fetchMessages(data.topic.id);
       }
@@ -45,11 +45,7 @@ export default function App() {
       }
     }
     
-    if (feedRef.current) {  
-      feedRef.current.scrollTop = feedRef.current.scrollHeight;
-    }
-
-    // fetch the funcs once 
+// fetch the funcs once 
     fetchForum();
 
     return () => {
@@ -57,6 +53,12 @@ export default function App() {
       socket.off('server-msg')
     }
   }, []);
+
+useEffect(() => {
+  if (feedRef.current) {
+    feedRef.current.scrollTop = feedRef.current.scrollHeight;
+  }
+}, [messages]);
 
 async function fetchMessages(topicId) {
       try{
@@ -107,8 +109,8 @@ async function fetchMessages(topicId) {
     <div className="arena-wrap">
       <div className="arena-header">
           <div className="label">Today's Topic</div>
-          <div className="topic" id="topic-text">{topic.title}</div>
-        <Link to={'/lobby'}><button >Back</button></Link>
+          <div className="topic" id="topic-text">{topic.name}</div>
+<Link to={'/lobby'}><button className="back-btn">Back</button></Link>
       </div>
       
 
