@@ -292,21 +292,7 @@ export function addWin() {
 
 }
 
-// =======================================================
-// Perfect Score
-// =======================================================
 
-export function perfectScore() {
-
-    const progress = loadProgress();
-
-    progress.perfectScores++;
-
-    unlockAchievement("perfect");
-
-    saveProgress(progress);
-
-}
 
 
 // =======================================================
