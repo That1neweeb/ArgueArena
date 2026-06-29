@@ -10,6 +10,15 @@ import npcSmirk from "./images/npc-smirk.png";
 import playerImg from "./images/player.png";
 import storyService from "../../serviceLayer/storyService.js";
 
+// Achievement & Progress System
+import {
+  defeatBoss,
+  completeStage,
+  perfectScore,
+} from "../../gameData/playerProgress.js";
+
+import { unlockAchievement } from "../Achievements/achievementManager";
+
 const moodMap = {
   0: "smirk",
   1: "neutral",
@@ -128,6 +137,19 @@ export default function BattleScreen() {
     try {
       const result = await storyService.submitTurn(turn.id, option.optionNumber);
       const nextScore = score + (result.earnedScore || 0);
+      const maxPossibleScore = roundInfo.numberOfTurns * 2;
+const scorePercentage =
+    (nextScore / maxPossibleScore) * 100;
+
+// Critical Thinker
+if (scorePercentage >= 90) {
+    unlockAchievement("critical");
+}
+
+// // Perfect Argument
+// if (scorePercentage === 100) {
+//     unlockAchievement("perfect");
+// }
       setScore(nextScore);
       setNpcMood(result.expression || moodMap[result.quality] || "neutral");
       setDialogue(result.npcReply || "Your argument lands.");
@@ -141,13 +163,36 @@ export default function BattleScreen() {
       });
 
       if (isLastTurn) {
-        const finishResult = await storyService.finishRound(
-          roundInfo.chapterId,
-          roundInfo.roundNumber,
-          nextScore,
-          roundInfo.passingScore,
-          roundInfo.bossRound
-        );
+
+    const finishResult = await storyService.finishRound(
+      roundInfo.chapterId,
+      roundInfo.roundNumber,
+      nextScore,
+      roundInfo.passingScore,
+      roundInfo.bossRound
+    );
+
+    // ===========================================
+    // NEW ACHIEVEMENT SYSTEM
+    // ===========================================
+
+    if (finishResult.passed) {
+
+      // completed stage
+      completeStage(roundInfo.chapterId);
+
+      // // defeated NPC
+      // addBossKill();
+      defeatBoss();
+
+      // perfect score
+      if (nextScore >= roundInfo.numberOfTurns * 2) {
+        PerfectScore();
+      }
+
+    }
+
+    // ===========================================
 
         navigate("/story/round-result", {
           state: {

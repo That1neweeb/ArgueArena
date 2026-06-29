@@ -43,8 +43,12 @@
 //     )
 // }
 
-import { Route, Routes } from 'react-router-dom';
-import React, { Suspense } from 'react';
+import { Route, Routes } from "react-router-dom";
+import React, { Suspense, useEffect, useState } from "react";
+
+// Achievement Popup
+import AchievementPopup from "../features/Achievements/AchievementPopup";
+import { ACHIEVEMENTS } from "../features/Achievements/AchievementData";
 
 import ProtectedRoute from './ProtectedRoutes';
 
@@ -63,7 +67,55 @@ const StoryProfile = React.lazy(() => import('../features/StoryMode/StoryProfile
 const Achievements = React.lazy(() => import('../pages/Achievements'));
 
 export default function AppRoutes() {
+    // ===========================================
+// Achievement Popup State
+// ===========================================
+
+const [popupAchievement, setPopupAchievement] = useState(null);
+// ===============================================
+  // LISTEN FOR ACHIEVEMENT EVENTS
+  // ===============================================
+
+  useEffect(() => {
+
+    function handleAchievement(event) {
+
+      const achievement = ACHIEVEMENTS.find(
+
+        (item) => item.id === event.detail
+
+      );
+
+      if (!achievement) return;
+
+      setPopupAchievement(achievement);
+
+      setTimeout(() => {
+
+        setPopupAchievement(null);
+
+      }, 3500);
+
+    }
+
+    window.addEventListener(
+      "achievementUnlocked",
+      handleAchievement
+    );
+
+    return () => {
+
+      window.removeEventListener(
+        "achievementUnlocked",
+        handleAchievement
+      );
+
+    };
+
+  }, []);
+
   return (
+    <>
     
       <Routes>
 
@@ -133,5 +185,14 @@ export default function AppRoutes() {
         <Route path="/register" element={<Register />} />
 
       </Routes>
+       {/* ==========================================
+          ACHIEVEMENT POPUP
+      ========================================== */}
+
+      <AchievementPopup
+        achievement={popupAchievement}
+      />
+      
+    </>
   );
 }
