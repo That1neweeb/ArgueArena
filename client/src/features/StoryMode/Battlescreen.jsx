@@ -234,9 +234,21 @@ export default function BattleScreen() {
           sounds.victory.play();
           completeStage(roundInfo.chapterId);
           defeatBoss();
+
+          if (nextScore >= roundInfo.numberOfTurns * 2) {
+        // The backend will grant `perfect-round` when the round is passed
+        // as `perfectRound` if the game provides per-turn qualities.
+        // We still notify client-side achievements popup to show it immediately.
+        unlockAchievement("perfect-round");
+      }
+
         } else {
           sounds.defeat.play();
         }
+    // ===========================================
+    // NEW ACHIEVEMENT SYSTEM
+    // ===========================================
+    // ===========================================
 
         navigate("/story/round-result", {
           state: {

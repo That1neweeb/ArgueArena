@@ -16,16 +16,44 @@ export default function Achievements() {
     const navigate = useNavigate();
 
     const [achievementState, setAchievementState] = useState({});
+    const [unlockedCount, setUnlockedCount] = useState(0);
+    const [progress, setProgress] = useState(0);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
+        let mounted = true;
 
-        setAchievementState(loadAchievements());
+        async function loadAll() {
+            try {
+                setLoading(true);
+                setError(null);
 
+                const [state, unlocked, pct] = await Promise.all([
+                    loadAchievements(),
+                    getUnlockedCount(),
+                    getProgressPercentage(),
+                ]);
+
+                if (!mounted) return;
+                setAchievementState(state);
+                setUnlockedCount(unlocked);
+                setProgress(pct);
+            } catch (e) {
+                if (!mounted) return;
+                setError(e?.message || "Failed to load achievements");
+            } finally {
+                if (!mounted) return;
+                setLoading(false);
+            }
+        }
+
+        loadAll();
+        return () => {
+            mounted = false;
+        };
     }, []);
 
-    const unlockedCount = getUnlockedCount();
-
-    const progress = getProgressPercentage();
 
     const groupedAchievements = useMemo(() => {
 
@@ -105,50 +133,51 @@ export default function Achievements() {
                 OVERALL PROGRESS
             ============================ */}
 
-            <div className="overall-progress">
+            {error && (
+                <div className="achievement-error">{error}</div>
+            )}
 
-                <div className="progress-left">
+            {loading ? (
+                <div className="achievement-loading">Loading achievements...</div>
+            ) : (
+                <div className="overall-progress">
 
-                    <h3>
-                        Overall Progress
-                    </h3>
+                    <div className="progress-left">
+                        <h3>
+                            Overall Progress
+                        </h3>
 
-                    <h4>
+                        <h4>
+                            {unlockedCount}
+                            {" / "}
+                            {ACHIEVEMENTS.length}
+                            {" Completed"}
+                        </h4>
+                    </div>
 
-                        {unlockedCount}
+                    <div className="progress-right">
 
-                        {" / "}
+                        <div className="progress-bar">
 
-                        {ACHIEVEMENTS.length}
+                            <div
+                                className="progress-fill"
+                                style={{
+                                    width: `${progress}%`
+                                }}
+                            />
 
-                        {" Completed"}
+                        </div>
 
-                    </h4>
+                        <span>
 
-                </div>
+                            {Math.round(progress)}%
 
-                <div className="progress-right">
-
-                    <div className="progress-bar">
-
-                        <div
-                            className="progress-fill"
-                            style={{
-                                width: `${progress}%`
-                            }}
-                        />
+                        </span>
 
                     </div>
 
-                    <span>
-
-                        {Math.round(progress)}%
-
-                    </span>
-
                 </div>
-
-            </div>
+            )}
 
             {/* ===========================
                 STATS
