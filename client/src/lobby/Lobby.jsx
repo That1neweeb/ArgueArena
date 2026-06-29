@@ -1,8 +1,12 @@
 
 
+/**
+ * Dependencies (add to your project):
+ *   npm install three @react-three/fiber @react-three/drei
+ */
+import { Physics,RigidBody } from "@react-three/rapier";
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from "../context/authContext.jsx";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
   Grid,
@@ -17,6 +21,7 @@ import "./Lobby.css";
 import HTPModal from "./HTP";
 import StoryModeModal from "../features/StoryMode/StoryModeModal";
 import Scene from "./Scene";
+import { useAuth } from '../context/authContext.jsx';
 
 export const PLATE_DATA = [
   { label: "STORY MODE",   color: 0xe85d04, pos: [-5, 1.2, -3], page: "story" },
@@ -113,11 +118,11 @@ export function ZonePlate({ label, color, pos, onEnter }) {
         rotation={[-Math.PI / 2, 0, 0]}
         position={[pos[0], 0.02, pos[2]]}
       >
-        <ringGeometry args={[0.5, 0.7, 32]} />
+        <ringGeometry args={[1.3, 1.7, 32]} />
         <meshBasicMaterial
           color={color}
           transparent
-          opacity={0.28}
+          opacity={0.7}
           side={THREE.DoubleSide}
         />
       </mesh>
@@ -127,63 +132,66 @@ export function ZonePlate({ label, color, pos, onEnter }) {
 
 // ── PLAYER ────────────────────────────────────────
 export function Player({ onProximityChange }) {
-  const meshRef = useRef();
+  const body = useRef(null);
   const { camera } = useThree();
-
-  const vel   = useRef({ x: 0, z: 0 });
-  const pos   = useRef({ x: 0, z: 2 });
-  const keys  = useRef({});
+  const keys = useRef({});
 
   // Proximity tracking
   const currentProximity = useRef(null);
-  const proximityTimer   = useRef(null);
+  const proximityTimer = useRef(null);
 
   useEffect(() => {
     const down = (e) => { keys.current[e.key] = true; };
-    const up   = (e) => { keys.current[e.key] = false; };
+    const up = (e) => { keys.current[e.key] = false; };
     window.addEventListener("keydown", down);
-    window.addEventListener("keyup",   up);
+    window.addEventListener("keyup", up);
     return () => {
       window.removeEventListener("keydown", down);
-      window.removeEventListener("keyup",   up);
+      window.removeEventListener("keyup", up);
     };
   }, []);
 
-  useFrame(({ clock }) => {
-    const t     = clock.getElapsedTime();
-    const speed = 0.1;
-    const k     = keys.current;
+  useFrame(({ clock, delta }) => {
+    const bodyApi = body.current;
+    if (!bodyApi) return;
 
-    if (k["ArrowLeft"]  || k["a"] || k["A"]) vel.current.x -= speed;
-    if (k["ArrowRight"] || k["d"] || k["D"]) vel.current.x += speed;
-    if (k["ArrowUp"]    || k["w"] || k["W"]) vel.current.z -= speed;
-    if (k["ArrowDown"]  || k["s"] || k["S"]) vel.current.z += speed;
+    const t = clock.getElapsedTime();
+    const input = { x: 0, z: 0 };
+    const k = keys.current;
 
-    vel.current.x *= 0.4;
-    vel.current.z *= 0.4;
+    if (k["ArrowLeft"] || k["a"] || k["A"]) input.x -= 1;
+    if (k["ArrowRight"] || k["d"] || k["D"]) input.x += 1;
+    if (k["ArrowUp"] || k["w"] || k["W"]) input.z -= 1;
+    if (k["ArrowDown"] || k["s"] || k["S"]) input.z += 1;
 
-    pos.current.x = Math.max(-12, Math.min(12, pos.current.x + vel.current.x));
-    pos.current.z = Math.max(-12, Math.min(12, pos.current.z + vel.current.z));
+    const currentVel = bodyApi.linvel();
+    const moveSpeed = 4;
+    const targetVel = {
+      x: input.x * moveSpeed,
+      y: currentVel.y,
+      z: input.z * moveSpeed,
+    };
 
-    if (meshRef.current) {
-      meshRef.current.position.x  = pos.current.x;
-      meshRef.current.position.z  = pos.current.z;
-      meshRef.current.position.y  = 0.5 + Math.sin(t * 1.5) * 0.05;
-      meshRef.current.rotation.y += 0.015;
+    bodyApi.setLinvel(targetVel, true);
+
+    const translation = bodyApi.translation();
+    const playerX = Math.max(-12, Math.min(12, translation.x));
+    const playerZ = Math.max(-12, Math.min(12, translation.z));
+
+    if (playerX !== translation.x || playerZ !== translation.z) {
+      bodyApi.setTranslation({ x: playerX, y: translation.y, z: playerZ }, true);
     }
 
-    // Smooth camera follow
-    camera.position.x += (pos.current.x * 0.6 - camera.position.x) * 0.08;
-    camera.position.z += (pos.current.z * 0.6 + 10 - camera.position.z) * 0.08;
-    camera.lookAt(pos.current.x, 0, pos.current.z);
+    camera.position.x += (playerX * 0.6 - camera.position.x) * 0.08;
+    camera.position.z += (playerZ * 0.6 + 10 - camera.position.z) * 0.08;
+    camera.lookAt(playerX, 0, playerZ);
 
-    // Proximity detection
     let nearest = null;
     let nearestDist = Infinity;
 
     PLATE_DATA.forEach((pd) => {
-      const dx   = pos.current.x - pd.pos[0];
-      const dz   = pos.current.z - pd.pos[2];
+      const dx = playerX - pd.pos[0];
+      const dz = playerZ - pd.pos[2];
       const dist = Math.sqrt(dx * dx + dz * dz);
       if (dist < nearestDist) { nearestDist = dist; nearest = { pd, dist }; }
     });
@@ -191,7 +199,7 @@ export function Player({ onProximityChange }) {
     const labelEl = document.getElementById("proximity-label");
     if (labelEl) {
       if (nearest && nearest.dist < 3.2) {
-        labelEl.textContent   = ` ${nearest.pd.label}`;
+        labelEl.textContent = ` ${nearest.pd.label}`;
         labelEl.style.opacity = "1";
 
         if (nearest.dist < 1.8 && currentProximity.current !== nearest.pd.page) {
@@ -211,16 +219,116 @@ export function Player({ onProximityChange }) {
   });
 
   return (
-    <mesh ref={meshRef} position={[0, 0.5, 2]} castShadow>
-      <boxGeometry args={[0.7, 0.7, 0.7]} />
-      <meshStandardMaterial
-        color={0xfff3e0}
-        emissive={0xe85d04}
-        emissiveIntensity={0.7}
-        roughness={0.25}
-        metalness={0.7}
-      />
-    </mesh>
+    <RigidBody
+      ref={body}
+      colliders="ball"
+      position={[0, 0.5, 2]}
+      restitution={0.2}
+      friction={1}
+      linearDamping={4}
+      angularDamping={1}
+      lockRotations
+    >
+      <group rotation={[0, Math.PI, 0]}>
+        {/* Head */}
+        <mesh position={[0, 0.95, 0]} castShadow>
+          <boxGeometry args={[0.42, 0.42, 0.4]} />
+          <meshStandardMaterial color={0xd9a066} roughness={0.6} metalness={0.05} />
+        </mesh>
+
+        {/* Hair - back/top cap */}
+        <mesh position={[0, 1.12, -0.02]} castShadow>
+          <boxGeometry args={[0.46, 0.22, 0.44]} />
+          <meshStandardMaterial color={0x0d0d0d} roughness={0.7} metalness={0.05} />
+        </mesh>
+
+        {/* Hair - spiky tufts (a few angled boxes for that low-poly spike look) */}
+        <mesh position={[-0.1, 1.28, 0.02]} rotation={[0.2, 0, 0.3]} castShadow>
+          <coneGeometry args={[0.07, 0.22, 4]} />
+          <meshStandardMaterial color={0x0d0d0d} roughness={0.7} />
+        </mesh>
+        <mesh position={[0.08, 1.3, -0.05]} rotation={[-0.1, 0, -0.25]} castShadow>
+          <coneGeometry args={[0.07, 0.24, 4]} />
+          <meshStandardMaterial color={0x0d0d0d} roughness={0.7} />
+        </mesh>
+        <mesh position={[0.2, 1.22, 0.08]} rotation={[0.3, 0.2, -0.4]} castShadow>
+          <coneGeometry args={[0.06, 0.18, 4]} />
+          <meshStandardMaterial color={0x0d0d0d} roughness={0.7} />
+        </mesh>
+
+        {/* Eyebrow accent (optional detail like the reference) */}
+        <mesh position={[0.1, 0.98, 0.21]}>
+          <boxGeometry args={[0.08, 0.03, 0.02]} />
+          <meshStandardMaterial color={0x4a2e1e} />
+        </mesh>
+
+        {/* Torso / Jacket */}
+        <mesh position={[0, 0.55, 0]} castShadow>
+          <boxGeometry args={[0.5, 0.55, 0.32]} />
+          <meshStandardMaterial color={0x2255aa} roughness={0.45} metalness={0.15} />
+        </mesh>
+
+        {/* Collar */}
+        <mesh position={[0, 0.82, 0]} castShadow>
+          <boxGeometry args={[0.46, 0.08, 0.34]} />
+          <meshStandardMaterial color={0x1c468c} roughness={0.45} />
+        </mesh>
+
+        {/* Left arm (sleeve) */}
+        <mesh position={[-0.32, 0.55, 0]} castShadow>
+          <boxGeometry args={[0.16, 0.5, 0.18]} />
+          <meshStandardMaterial color={0x2255aa} roughness={0.45} metalness={0.15} />
+        </mesh>
+        {/* Left cuff */}
+        <mesh position={[-0.32, 0.32, 0]} castShadow>
+          <boxGeometry args={[0.18, 0.08, 0.2]} />
+          <meshStandardMaterial color={0x111111} roughness={0.5} />
+        </mesh>
+        {/* Left hand */}
+        <mesh position={[-0.32, 0.22, 0]} castShadow>
+          <boxGeometry args={[0.14, 0.12, 0.14]} />
+          <meshStandardMaterial color={0xd9a066} roughness={0.6} />
+        </mesh>
+
+        {/* Right arm (sleeve) */}
+        <mesh position={[0.32, 0.55, 0]} castShadow>
+          <boxGeometry args={[0.16, 0.5, 0.18]} />
+          <meshStandardMaterial color={0x2255aa} roughness={0.45} metalness={0.15} />
+        </mesh>
+        {/* Right cuff */}
+        <mesh position={[0.32, 0.32, 0]} castShadow>
+          <boxGeometry args={[0.18, 0.08, 0.2]} />
+          <meshStandardMaterial color={0x111111} roughness={0.5} />
+        </mesh>
+        {/* Right hand */}
+        <mesh position={[0.32, 0.22, 0]} castShadow>
+          <boxGeometry args={[0.14, 0.12, 0.14]} />
+          <meshStandardMaterial color={0xd9a066} roughness={0.6} />
+        </mesh>
+
+        {/* Left leg (pants) */}
+        <mesh position={[-0.13, 0.0, 0]} castShadow>
+          <boxGeometry args={[0.2, 0.55, 0.22]} />
+          <meshStandardMaterial color={0x0d0d0d} roughness={0.6} />
+        </mesh>
+        {/* Left shoe */}
+        <mesh position={[-0.13, -0.3, 0.04]} castShadow>
+          <boxGeometry args={[0.22, 0.14, 0.3]} />
+          <meshStandardMaterial color={0x3a2a1a} roughness={0.6} />
+        </mesh>
+
+        {/* Right leg (pants) */}
+        <mesh position={[0.13, 0.0, 0]} castShadow>
+          <boxGeometry args={[0.2, 0.55, 0.22]} />
+          <meshStandardMaterial color={0x0d0d0d} roughness={0.6} />
+        </mesh>
+        {/* Right shoe */}
+        <mesh position={[0.13, -0.3, 0.04]} castShadow>
+          <boxGeometry args={[0.22, 0.14, 0.3]} />
+          <meshStandardMaterial color={0x3a2a1a} roughness={0.6} />
+        </mesh>
+      </group>
+    </RigidBody>
   );
 }
 
@@ -238,7 +346,9 @@ function Lobby({ onEnterZone }) {
         gl.shadowMap.enabled = true;
       }}
     >
+      <Physics>
       <Scene onEnterZone={onEnterZone} />
+      </Physics>
     </Canvas>
   );
 }
@@ -260,6 +370,7 @@ export default function DebateVerse() {
   const [toast,       setToast]       = useState("");
   const toastTimer = useRef(null);
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const showToast = useCallback((msg) => {
     setToast(msg);
@@ -276,6 +387,11 @@ export default function DebateVerse() {
     setActivePage(null);
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   return (
     <>
       {/* R3F Canvas replaces the old imperative <div ref={mountRef}> */}
@@ -284,6 +400,14 @@ export default function DebateVerse() {
       <div id="lobby-ui">
         <div id="game-title">Argue Arena</div>
         <div id="hint">MOVE TO ENTER A ZONE</div>
+        <button
+          type="button"
+          className="lobby-action-btn"
+          onClick={handleLogout}
+          style={{ position: 'absolute', top: '1rem', right: '1rem', zIndex: 10 }}
+        >
+          Logout
+        </button>
       </div>
       <div id="proximity-label" />
       <div id="move-hint">WASD / ARROW KEYS TO MOVE</div>

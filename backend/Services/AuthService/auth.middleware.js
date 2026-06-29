@@ -1,5 +1,4 @@
 import jwt from 'jsonwebtoken';
-import { decode } from 'node:punycode';
 
 export async function verifyToken(req, res, next) {
     try {
