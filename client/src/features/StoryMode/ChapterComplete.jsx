@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import storyService from "../../serviceLayer/storyService.js";
 import "./StoryMode.css";
+import { unlockAchievement } from "../Achievements/achievementManager";
 
 export default function ChapterComplete() {
   const { chapterId } = useParams();

@@ -1,14 +1,18 @@
-//achievement page asks achievement manager asks localstorage.
+// ========================================================
+// Achievement Manager
+// Handles saving/loading/unlocking achievements
+// ========================================================
 
 import { ACHIEVEMENTS } from "./AchievementData";
+import { addXP } from "../../gameData/playerProgress";
 
 const STORAGE_KEY = "argueArenaAchievements";
 
-/*
------------------------------------------
-Create Default Achievement Save
------------------------------------------
-*/
+
+// ========================================================
+// Create default save
+// Called only the first time the game is opened.
+// ========================================================
 
 function createDefaultAchievements() {
 
@@ -17,8 +21,11 @@ function createDefaultAchievements() {
     ACHIEVEMENTS.forEach((achievement) => {
 
         save[achievement.id] = {
+
             unlocked: false,
+
             dateUnlocked: null,
+
         };
 
     });
@@ -27,11 +34,10 @@ function createDefaultAchievements() {
 
 }
 
-/*
------------------------------------------
-Load Achievements
------------------------------------------
-*/
+
+// ========================================================
+// Load save
+// ========================================================
 
 export function loadAchievements() {
 
@@ -54,20 +60,27 @@ export function loadAchievements() {
 
 }
 
-/*
------------------------------------------
-Save Achievements
------------------------------------------
-*/
+
+// ========================================================
+// Save
+// ========================================================
 
 export function saveAchievements(data) {
 
     localStorage.setItem(
+
         STORAGE_KEY,
+
         JSON.stringify(data)
+
     );
 
 }
+
+
+// ========================================================
+// Unlock an achievement
+// ========================================================
 
 /*
 -----------------------------------------
@@ -78,24 +91,103 @@ Unlock Achievement
 export function unlockAchievement(id) {
 
     const achievements = loadAchievements();
-
     if (!achievements[id]) return;
 
+    // already unlocked
     if (achievements[id].unlocked) return;
-
     achievements[id].unlocked = true;
-
-    achievements[id].dateUnlocked = new Date().toLocaleDateString();
-
+    achievements[id].dateUnlocked =
+        // new Date().toLocaleDateString();
+        new Date().toISOString().split("T")[0]
     saveAchievements(achievements);
+
+    // =======================================
+// ADDED
+// Give XP for this achievement
+// =======================================
+
+const achievement = ACHIEVEMENTS.find(
+
+    item => item.id === id
+
+);
+
+if(achievement){
+
+    addXP(achievement.xp);
 
 }
 
-/*
------------------------------------------
-Check if unlocked
------------------------------------------
-*/
+// =======================================
+// CHECK FOR COMPLETIONIST
+// Unlock when every other achievement
+// has been unlocked.
+// =======================================
+
+const unlockedCount = Object.entries(achievements).filter(
+
+    ([achievementId, achievement]) =>
+
+        achievementId !== "completionist" &&
+        achievement.unlocked
+
+).length;
+
+
+// Total achievements except Completionist
+
+const totalWithoutCompletionist =
+    ACHIEVEMENTS.length - 1;
+
+
+// Unlock Completionist
+
+if (
+
+    unlockedCount === totalWithoutCompletionist &&
+
+    !achievements["completionist"].unlocked
+
+){
+
+    achievements["completionist"].unlocked = true;
+
+    achievements["completionist"].dateUnlocked =
+        new Date().toLocaleDateString();
+
+    saveAchievements(achievements);
+
+    addXP(
+
+        ACHIEVEMENTS.find(
+
+            item => item.id === "completionist"
+
+        ).xp
+
+    );
+
+    // ===========================
+    // NEW
+    // Tell the whole game
+    // that an achievement unlocked.
+    // ===========================
+
+    window.dispatchEvent(
+        new CustomEvent("achievementUnlocked",{
+            detail:id,
+
+        })
+
+    );
+
+}
+
+
+// ========================================================
+// Is unlocked?
+// ========================================================
+}
 
 export function isAchievementUnlocked(id) {
 
@@ -105,11 +197,10 @@ export function isAchievementUnlocked(id) {
 
 }
 
-/*
------------------------------------------
-Get Achievement
------------------------------------------
-*/
+
+// ========================================================
+// Get one achievement
+// ========================================================
 
 export function getAchievement(id) {
 
@@ -119,27 +210,10 @@ export function getAchievement(id) {
 
 }
 
-/*
------------------------------------------
-Reset ALL Achievements
 
-(Useful while developing)
-
-Delete later if you want.
------------------------------------------
-*/
-
-export function resetAchievements() {
-
-    localStorage.removeItem(STORAGE_KEY);
-
-}
-
-/*
------------------------------------------
-Count unlocked achievements
------------------------------------------
-*/
+// ========================================================
+// Count unlocked achievements
+// ========================================================
 
 export function getUnlockedCount() {
 
@@ -161,11 +235,10 @@ export function getUnlockedCount() {
 
 }
 
-/*
------------------------------------------
-Total achievements
------------------------------------------
-*/
+
+// ========================================================
+// Total achievements
+// ========================================================
 
 export function getTotalAchievements() {
 
@@ -173,17 +246,69 @@ export function getTotalAchievements() {
 
 }
 
-/*
------------------------------------------
-Progress %
------------------------------------------
-*/
+
+// ========================================================
+// Progress percentage
+// ========================================================
 
 export function getProgressPercentage() {
 
     return (
-        (getUnlockedCount() /
-            getTotalAchievements()) * 100
-    );
 
+        getUnlockedCount()
+
+        /
+
+        getTotalAchievements()
+
+    ) * 100;
+
+}
+
+
+// ========================================================
+// Get every achievement with its unlock state
+//
+// This is used by Achievements.jsx
+// ========================================================
+
+export function getAchievementsWithStatus() {
+
+    const save = loadAchievements();
+
+    return ACHIEVEMENTS.map((achievement) => ({
+
+        ...achievement,
+
+        unlocked: save[achievement.id]?.unlocked || false,
+
+        dateUnlocked: save[achievement.id]?.dateUnlocked || null,
+
+    }));
+
+}
+
+
+// ========================================================
+// Developer Reset
+//
+// Use while testing.
+// Delete before final release.
+// ========================================================
+
+export function resetAchievements() {
+
+    localStorage.removeItem(STORAGE_KEY);
+
+}
+
+
+/*
+-----------------------------------------
+Get ALL achievements
+-----------------------------------------
+*/
+
+export function getAllAchievements() {
+    return loadAchievements();
 }

@@ -4,6 +4,8 @@ import storyService from "../../serviceLayer/storyService.js";
 import ZigzagMap from "./ZigzagMap.jsx";
 import "./StoryMode.css";
 
+import { unlockAchievement } from "../Achievements/achievementManager";
+
 export default function StoryMode() {
   const navigate = useNavigate();
   const [chapters, setChapters] = useState([]);
@@ -15,6 +17,15 @@ export default function StoryMode() {
       try {
         const response = await storyService.getChapters();
         setChapters(response.chapters || []);
+
+        // ===============================
+      // ADDED FOR ACHIEVEMENTS
+      // Unlock the Welcome Challenger achievement
+      // This only unlocks once because
+      // achievementManager prevents duplicates.
+      // ===============================
+            unlockAchievement("welcome");
+
       } catch (err) {
         setError(err.message || "Unable to load story chapters.");
       } finally {
