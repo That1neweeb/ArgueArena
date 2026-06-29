@@ -19,9 +19,16 @@ export default function App() {
       setCount(size);
     });
 
-    socket.on('server-msg',(message) => {
-      setMessages((prevMessages)=>[
-        ...prevMessages,message,
+    socket.on('server-msg',(serverPayload) => {
+      // Backend broadcasts the same payload it receives from client.
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        {
+          id: serverPayload.id ?? serverPayload.userId ?? crypto.randomUUID?.() ?? Date.now(),
+          text: serverPayload.text,
+          user: serverPayload.userName ?? 'You',
+          time: serverPayload.time,
+        },
       ]);
     })
 

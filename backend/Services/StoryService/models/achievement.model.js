@@ -18,38 +18,38 @@ export const Achievement = sequelize.define("Achievement", {
   },
   rewardXP: {
     type: DataTypes.INTEGER,
-    allowNull: false,
     defaultValue: 0,
   },
   rewardCoins: {
     type: DataTypes.INTEGER,
-    allowNull: false,
     defaultValue: 0,
   },
 });
 
-export const PlayerAchievement = sequelize.define("PlayerAchievement", {
-  earnedAt: {
-    type: DataTypes.DATE,
-    allowNull: false,
-    defaultValue: DataTypes.NOW,
+export const PlayerAchievement = sequelize.define(
+  "PlayerAchievement",
+  {
+    playerId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+
+    achievementId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+
+    earnedAt: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
   },
-});
-
-User.hasMany(PlayerAchievement, {
-  foreignKey: "playerId",
-  onDelete: "CASCADE",
-});
-
-PlayerAchievement.belongsTo(User, {
-  foreignKey: "playerId",
-});
-
-Achievement.hasMany(PlayerAchievement, {
-  foreignKey: "achievementId",
-  onDelete: "CASCADE",
-});
-
-PlayerAchievement.belongsTo(Achievement, {
-  foreignKey: "achievementId",
-});
+  {
+    indexes: [
+      {
+        unique: true,
+        fields: ["playerId", "achievementId"],
+      },
+    ],
+  }
+);
