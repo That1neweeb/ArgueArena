@@ -68,6 +68,15 @@ export const loadRoundDetails = async (chapterId, roundNumber, playerId) => {
   };
 };
 
+const shuffleOptions = (items) => {
+  const shuffled = [...items];
+  for (let i = shuffled.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
 export const loadTurnDetails = async (debateId, turnNumber, playerId) => {
   const turn = await loadTurn(debateId, turnNumber);
   const options = await loadOptions(turn.id);
@@ -78,7 +87,7 @@ export const loadTurnDetails = async (debateId, turnNumber, playerId) => {
 
   const detail = {
     turn: turn.toJSON(),
-    options: options.map((option) => option.toJSON()),
+    options: shuffleOptions(options.map((option) => option.toJSON())),
     debateId,
     roundNumber: debate.roundNumber,
     chapterId: debate.chapterId,

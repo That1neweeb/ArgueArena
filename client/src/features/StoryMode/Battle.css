@@ -65,6 +65,47 @@
   gap: 6px;
 }
 
+.battle-exit-btn {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(17, 24, 39, 0.72);
+  backdrop-filter: blur(14px);
+  color: rgba(232, 238, 248, 0.92);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.battle-exit-btn:hover {
+  background: rgba(23, 32, 51, 0.88);
+  border-color: rgba(110, 168, 255, 0.45);
+  box-shadow:
+    0 6px 24px rgba(0, 0, 0, 0.32),
+    0 0 20px rgba(90, 140, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+.battle-exit-btn:active {
+  transform: translateY(0);
+}
+
 /* ── Top HUD ── */
 
 .battle-hud {
@@ -72,7 +113,7 @@
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  padding: 4px 2px;
+  padding: 4px 2px 4px 140px;
 }
 
 .hud-cluster {
@@ -123,8 +164,9 @@
   position: absolute;
   z-index: 4;
   display: flex;
+  align-items: center;
   gap: 12px;
-  width: min(320px, 38vw);
+  width: min(260px, 34vw);
   padding: 12px 14px;
   border-radius: 16px;
   background: rgba(17, 24, 39, 0.72);
@@ -167,15 +209,10 @@
 .combat-stats {
   flex: 1;
   min-width: 0;
-  display: grid;
-  gap: 6px;
-}
-
-.combat-header {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 8px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
 }
 
 .combat-name {
@@ -188,61 +225,22 @@
 }
 
 .combat-role {
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--accent-light);
-  flex-shrink: 0;
 }
 
-.stat-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.stat-label {
-  font-size: 0.62rem;
+.combat-score {
+  font-size: 0.82rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgba(232, 238, 248, 0.55);
-  min-width: 52px;
-}
-
-.bar-track {
-  flex: 1;
-  height: 8px;
-  border-radius: 999px;
-  overflow: hidden;
-  background: rgba(11, 16, 32, 0.8);
-  border: 1px solid var(--border-soft);
-}
-
-.bar-fill {
-  height: 100%;
-  border-radius: 999px;
-  transition: width 0.55s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.bar-fill--enemy {
-  background: linear-gradient(90deg, #3db856, var(--enemy-bar));
-  box-shadow: 0 0 10px rgba(87, 211, 108, 0.45);
-}
-
-.bar-fill--player {
-  background: linear-gradient(90deg, #3868c8, var(--player-bar));
-  box-shadow: 0 0 10px var(--glow-blue);
-}
-
-.combat-meta {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  font-size: 0.68rem;
-  font-weight: 700;
-  color: rgba(232, 238, 248, 0.6);
+  color: #6ea8ff;
   letter-spacing: 0.04em;
+}
+
+.combat-card--player .combat-stats {
+  align-items: flex-end;
+  text-align: right;
 }
 
 /* ── Sprites ── */
