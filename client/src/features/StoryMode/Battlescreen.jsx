@@ -1,5 +1,6 @@
 ﻿import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { Howl, Howler } from "howler";
 import "./Battle.css";
 import battleBg from "./images/battle-bg.png";
 
@@ -8,7 +9,7 @@ import npcPanic from "./images/npc-panic.png";
 import npcNeutral from "./images/npc-neutral.png";
 import npcSmirk from "./images/npc-smirk.png";
 import playerImg from "./images/player.png";
-import storyService from "../../serviceLayer/storyService.js";
+import storyService from "../../serviceLayer/storyService.js"
 
 // Achievement & Progress System
 import {
@@ -18,13 +19,45 @@ import {
 
 import { unlockAchievement } from "../Achievements/achievementManager";
 
+// ── SOUNDS ────────────────────────────────────────────────────────────────
+const sounds = {
+  battleBgm: new Howl({
+    src: ["/sounds/battle-bgm.mp3"],
+    loop: true,
+    volume: 0.35,
+  }),
+  optionHover: new Howl({
+    src: ["/sounds/hover.mp3"],
+    volume: 0.25,
+  }),
+  optionClick: new Howl({
+    src: ["/sounds/click.mp3"],
+    volume: 0.5,
+  }),
+  correctAnswer: new Howl({
+    src: ["/sounds/correct.mp3"],
+    volume: 0.6,
+  }),
+  wrongAnswer: new Howl({
+    src: ["/sounds/wrong.mp3"],
+    volume: 0.55,
+  }),
+  victory: new Howl({
+    src: ["/sounds/victory.mp3"],
+    volume: 0.7,
+  }),
+  defeat: new Howl({
+    src: ["/sounds/defeat.mp3"],
+    volume: 0.7,
+  }),
+};
+
 const moodMap = {
   0: "smirk",
   1: "neutral",
   2: "panic",
 };
 
-const OPTION_MARKS = ["①", "②", "③"];
 const REPLY_DELAY_MS = 1800;
 
 export default function BattleScreen() {
@@ -48,6 +81,7 @@ export default function BattleScreen() {
   const [isTurnTransition, setIsTurnTransition] = useState(false);
   const [error, setError] = useState("");
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [muted, setMuted] = useState(false);
 
   const npcImage = {
     idle: npcIdle,
@@ -59,15 +93,36 @@ export default function BattleScreen() {
   const roundNumber = roundInfo?.roundNumber ?? "—";
   const xpDisplay = score * 8;
 
+  // ── BGM: start on mount, stop on unmount ──────────────────────────────
+  useEffect(() => {
+    sounds.battleBgm.play();
+    return () => {
+      sounds.battleBgm.stop();
+    };
+  }, []);
+
+  // ── MUTE toggle ───────────────────────────────────────────────────────
+ const toggleMute = () => {
+  if (muted) {
+    sounds.battleBgm.volume(0.35);
+  } else {
+    sounds.battleBgm.volume(0);
+  }
+  setMuted(!muted);
+};
+
+  // ── EXIT ──────────────────────────────────────────────────────────────
   const handleExitBattle = () => {
     setShowExitConfirm(true);
   };
 
   const confirmExit = () => {
+    sounds.battleBgm.stop();
     if (advanceTimer.current) clearTimeout(advanceTimer.current);
     navigate("/story");
   };
 
+  // ── FETCH TURN ────────────────────────────────────────────────────────
   const fetchTurn = async (debateId, currentTurn, { fullScreen = false } = {}) => {
     try {
       if (fullScreen) setLoading(true);
@@ -128,15 +183,25 @@ export default function BattleScreen() {
     };
   }, []);
 
+  // ── CHOOSE OPTION ─────────────────────────────────────────────────────
   const chooseOption = async (option) => {
     if (!turn || !roundInfo || isResolving || isTurnTransition) return;
 
+    sounds.optionClick.play();
     setIsResolving(true);
+
     try {
       const result = await storyService.submitTurn(turn.id, option.optionNumber);
       const nextScore = score + (result.earnedScore || 0);
       const maxPossibleScore = roundInfo.numberOfTurns * 2;
       const scorePercentage = (nextScore / maxPossibleScore) * 100;
+
+      // Play correct / wrong SFX
+      if (result.earnedScore > 0) {
+        sounds.correctAnswer.play();
+      } else {
+        sounds.wrongAnswer.play();
+      }
 
       if (scorePercentage >= 90) {
         unlockAchievement("critical");
@@ -163,9 +228,14 @@ export default function BattleScreen() {
           roundInfo.bossRound
         );
 
+        // Stop BGM then play result sting
+        sounds.battleBgm.stop();
         if (finishResult.passed) {
+          sounds.victory.play();
           completeStage(roundInfo.chapterId);
           defeatBoss();
+        } else {
+          sounds.defeat.play();
         }
 
         navigate("/story/round-result", {
@@ -191,6 +261,25 @@ export default function BattleScreen() {
     }
   };
 
+  // ── EXIT MODAL (reusable) ─────────────────────────────────────────────
+  const ExitModal = () => (
+    <div className="exit-overlay">
+      <div className="exit-modal">
+        <p className="exit-title">Exit Battle?</p>
+        <p className="exit-sub">Your current progress will be lost.</p>
+        <div className="exit-actions">
+          <button className="exit-btn exit-btn--cancel" onClick={() => setShowExitConfirm(false)}>
+            Keep Fighting
+          </button>
+          <button className="exit-btn exit-btn--confirm" onClick={confirmExit}>
+            Exit
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── LOADING ───────────────────────────────────────────────────────────
   if (loading) {
     return (
       <div className="battle-screen battle-screen--status" style={{ backgroundImage: `url(${battleBg})` }}>
@@ -198,26 +287,12 @@ export default function BattleScreen() {
           ← Exit Battle
         </button>
         <div className="battle-status-message">Loading battle...</div>
-        {showExitConfirm && (
-          <div className="exit-overlay">
-            <div className="exit-modal">
-              <p className="exit-title">Exit Battle?</p>
-              <p className="exit-sub">Your current progress will be lost.</p>
-              <div className="exit-actions">
-                <button className="exit-btn exit-btn--cancel" onClick={() => setShowExitConfirm(false)}>
-                  Keep Fighting
-                </button>
-                <button className="exit-btn exit-btn--confirm" onClick={confirmExit}>
-                  Exit
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        {showExitConfirm && <ExitModal />}
       </div>
     );
   }
 
+  // ── ERROR ─────────────────────────────────────────────────────────────
   if (error) {
     return (
       <div className="battle-screen battle-screen--status" style={{ backgroundImage: `url(${battleBg})` }}>
@@ -225,37 +300,31 @@ export default function BattleScreen() {
           ← Exit Battle
         </button>
         <div className="battle-status-message">{error}</div>
-        {showExitConfirm && (
-          <div className="exit-overlay">
-            <div className="exit-modal">
-              <p className="exit-title">Exit Battle?</p>
-              <p className="exit-sub">Your current progress will be lost.</p>
-              <div className="exit-actions">
-                <button className="exit-btn exit-btn--cancel" onClick={() => setShowExitConfirm(false)}>
-                  Keep Fighting
-                </button>
-                <button className="exit-btn exit-btn--confirm" onClick={confirmExit}>
-                  Exit
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        {showExitConfirm && <ExitModal />}
       </div>
     );
   }
 
   const npcRole = roundInfo?.bossRound ? "Boss" : "Debater";
-  const dialogueHeader =
-    dialoguePhase === "reply" ? `${npcName} responds` : npcName;
+  const dialogueHeader = dialoguePhase === "reply" ? `${npcName} responds` : npcName;
 
+  // ── MAIN RENDER ───────────────────────────────────────────────────────
   return (
     <div className="battle-screen" style={{ backgroundImage: `url(${battleBg})` }}>
+
+      {/* Exit button */}
       <button type="button" className="battle-exit-btn" onClick={handleExitBattle}>
         ← Exit Battle
       </button>
 
+      {/* Mute button */}
+      <button type="button" className="battle-mute-btn" onClick={toggleMute}>
+        {muted ? "🔇" : "🔊"}
+      </button>
+
       <div className="battle-layout">
+
+        {/* HUD */}
         <header className="battle-hud">
           <div className="hud-cluster hud-cluster--left">
             <span className="hud-chip hud-chip--accent">{npcName}</span>
@@ -275,7 +344,10 @@ export default function BattleScreen() {
           </div>
         </header>
 
+        {/* Battle field */}
         <main className="poke-field">
+
+          {/* NPC combat card */}
           <article className="combat-card combat-card--enemy">
             <div className="combat-portrait combat-portrait--enemy">
               <img src={npcImage} alt={npcName} />
@@ -286,6 +358,7 @@ export default function BattleScreen() {
             </div>
           </article>
 
+          {/* NPC sprite */}
           <div className="sprite-zone sprite-zone--enemy">
             <div className="sprite-glow sprite-glow--enemy" aria-hidden="true" />
             <img
@@ -295,6 +368,7 @@ export default function BattleScreen() {
             />
           </div>
 
+          {/* Player sprite */}
           <div className="sprite-zone sprite-zone--player">
             <div className="sprite-glow sprite-glow--player" aria-hidden="true" />
             <img
@@ -304,6 +378,7 @@ export default function BattleScreen() {
             />
           </div>
 
+          {/* Player combat card */}
           <article className="combat-card combat-card--player">
             <div className="combat-portrait combat-portrait--player">
               <img src={playerImg} alt="Player" />
@@ -313,10 +388,14 @@ export default function BattleScreen() {
               <span className="combat-score">Score {score}</span>
             </div>
           </article>
+
         </main>
 
+        {/* Bottom menu */}
         <footer className="poke-menu">
           <div className="poke-menu-grid">
+
+            {/* Dialogue box */}
             <div className={`dialogue-box ${isTurnTransition ? "dialogue-box--loading" : ""}`}>
               <div className="dialogue-header">{dialogueHeader}</div>
               <p className="dialogue-text" key={`${dialoguePhase}-${dialogue}`}>
@@ -329,6 +408,7 @@ export default function BattleScreen() {
               )}
             </div>
 
+            {/* Options */}
             <div className="options-panel">
               {options.length > 0 ? (
                 options.map((option) => (
@@ -336,6 +416,7 @@ export default function BattleScreen() {
                     key={option.id ?? option.optionNumber}
                     className="option-btn"
                     disabled={isResolving || isTurnTransition}
+                    onMouseEnter={() => sounds.optionHover.play()}
                     onClick={() => chooseOption(option)}
                   >
                     <span className="option-text">{option.text}</span>
@@ -347,26 +428,14 @@ export default function BattleScreen() {
                 </div>
               )}
             </div>
+
           </div>
         </footer>
       </div>
 
-      {showExitConfirm && (
-        <div className="exit-overlay">
-          <div className="exit-modal">
-            <p className="exit-title">Exit Battle?</p>
-            <p className="exit-sub">Your current progress will be lost.</p>
-            <div className="exit-actions">
-              <button className="exit-btn exit-btn--cancel" onClick={() => setShowExitConfirm(false)}>
-                Keep Fighting
-              </button>
-              <button className="exit-btn exit-btn--confirm" onClick={confirmExit}>
-                Exit
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Exit confirm modal */}
+      {showExitConfirm && <ExitModal />}
+
     </div>
   );
 }
