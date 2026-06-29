@@ -6,10 +6,8 @@ export default function ProtectedRoute(){
     
     if(loading) return <>"loading"</>;
 
-    if(!user) {
-        console.log('invalid');
-        return <Navigate to="/login" replace/>
-
+if(!user) {
+        return <Navigate to="/" replace />;
     }
     return <Outlet/>;
 }
