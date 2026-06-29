@@ -136,6 +136,13 @@ export function Player({ onProximityChange }) {
   const { camera } = useThree();
   const keys = useRef({});
 
+  // Animation refs
+  const leftLegRef = useRef(null);
+  const rightLegRef = useRef(null);
+  const leftArmRef = useRef(null);
+  const rightArmRef = useRef(null);
+  const bodyMeshRef = useRef(null);
+
   // Proximity tracking
   const currentProximity = useRef(null);
   const proximityTimer = useRef(null);
@@ -185,6 +192,29 @@ export function Player({ onProximityChange }) {
     camera.position.x += (playerX * 0.6 - camera.position.x) * 0.08;
     camera.position.z += (playerZ * 0.6 + 10 - camera.position.z) * 0.08;
     camera.lookAt(playerX, 0, playerZ);
+
+    // --- Walk animation ---
+    const isMoving = input.x !== 0 || input.z !== 0;
+    const walkSpeed = 8;
+    const swing = 0.5;
+
+    if (leftLegRef.current && rightLegRef.current && leftArmRef.current && rightArmRef.current && bodyMeshRef.current) {
+      if (isMoving) {
+        leftLegRef.current.rotation.x = Math.sin(t * walkSpeed) * swing;
+        rightLegRef.current.rotation.x = -Math.sin(t * walkSpeed) * swing;
+
+        leftArmRef.current.rotation.x = -Math.sin(t * walkSpeed) * swing * 0.7;
+        rightArmRef.current.rotation.x = Math.sin(t * walkSpeed) * swing * 0.7;
+
+        bodyMeshRef.current.position.y = 0.55 + Math.abs(Math.sin(t * walkSpeed)) * 0.04;
+      } else {
+        leftLegRef.current.rotation.x = 0;
+        rightLegRef.current.rotation.x = 0;
+        leftArmRef.current.rotation.x = Math.sin(t * 1.5) * 0.05;
+        rightArmRef.current.rotation.x = -Math.sin(t * 1.5) * 0.05;
+        bodyMeshRef.current.position.y = 0.55 + Math.sin(t * 1.5) * 0.01;
+      }
+    }
 
     let nearest = null;
     let nearestDist = Infinity;
@@ -242,7 +272,7 @@ export function Player({ onProximityChange }) {
           <meshStandardMaterial color={0x0d0d0d} roughness={0.7} metalness={0.05} />
         </mesh>
 
-        {/* Hair - spiky tufts (a few angled boxes for that low-poly spike look) */}
+        {/* Hair - spiky tufts */}
         <mesh position={[-0.1, 1.28, 0.02]} rotation={[0.2, 0, 0.3]} castShadow>
           <coneGeometry args={[0.07, 0.22, 4]} />
           <meshStandardMaterial color={0x0d0d0d} roughness={0.7} />
@@ -256,77 +286,80 @@ export function Player({ onProximityChange }) {
           <meshStandardMaterial color={0x0d0d0d} roughness={0.7} />
         </mesh>
 
-        {/* Eyebrow accent (optional detail like the reference) */}
+        {/* Eyebrow accent */}
         <mesh position={[0.1, 0.98, 0.21]}>
           <boxGeometry args={[0.08, 0.03, 0.02]} />
           <meshStandardMaterial color={0x4a2e1e} />
         </mesh>
 
-        {/* Torso / Jacket */}
-        <mesh position={[0, 0.55, 0]} castShadow>
-          <boxGeometry args={[0.5, 0.55, 0.32]} />
-          <meshStandardMaterial color={0x2255aa} roughness={0.45} metalness={0.15} />
-        </mesh>
+        {/* Torso / Jacket - wrapped in bodyMeshRef for bob animation */}
+        <group ref={bodyMeshRef} position={[0, 0.55, 0]}>
+          <mesh castShadow>
+            <boxGeometry args={[0.5, 0.55, 0.32]} />
+            <meshStandardMaterial color={0x2255aa} roughness={0.45} metalness={0.15} />
+          </mesh>
+          {/* Collar */}
+          <mesh position={[0, 0.27, 0]} castShadow>
+            <boxGeometry args={[0.46, 0.08, 0.34]} />
+            <meshStandardMaterial color={0x1c468c} roughness={0.45} />
+          </mesh>
+        </group>
 
-        {/* Collar */}
-        <mesh position={[0, 0.82, 0]} castShadow>
-          <boxGeometry args={[0.46, 0.08, 0.34]} />
-          <meshStandardMaterial color={0x1c468c} roughness={0.45} />
-        </mesh>
+        {/* Left arm group - pivot at shoulder */}
+        <group ref={leftArmRef} position={[-0.32, 0.78, 0]}>
+          <mesh position={[0, -0.23, 0]} castShadow>
+            <boxGeometry args={[0.16, 0.5, 0.18]} />
+            <meshStandardMaterial color={0x2255aa} roughness={0.45} metalness={0.15} />
+          </mesh>
+          <mesh position={[0, -0.46, 0]} castShadow>
+            <boxGeometry args={[0.18, 0.08, 0.2]} />
+            <meshStandardMaterial color={0x111111} roughness={0.5} />
+          </mesh>
+          <mesh position={[0, -0.56, 0]} castShadow>
+            <boxGeometry args={[0.14, 0.12, 0.14]} />
+            <meshStandardMaterial color={0xd9a066} roughness={0.6} />
+          </mesh>
+        </group>
 
-        {/* Left arm (sleeve) */}
-        <mesh position={[-0.32, 0.55, 0]} castShadow>
-          <boxGeometry args={[0.16, 0.5, 0.18]} />
-          <meshStandardMaterial color={0x2255aa} roughness={0.45} metalness={0.15} />
-        </mesh>
-        {/* Left cuff */}
-        <mesh position={[-0.32, 0.32, 0]} castShadow>
-          <boxGeometry args={[0.18, 0.08, 0.2]} />
-          <meshStandardMaterial color={0x111111} roughness={0.5} />
-        </mesh>
-        {/* Left hand */}
-        <mesh position={[-0.32, 0.22, 0]} castShadow>
-          <boxGeometry args={[0.14, 0.12, 0.14]} />
-          <meshStandardMaterial color={0xd9a066} roughness={0.6} />
-        </mesh>
+        {/* Right arm group - pivot at shoulder */}
+        <group ref={rightArmRef} position={[0.32, 0.78, 0]}>
+          <mesh position={[0, -0.23, 0]} castShadow>
+            <boxGeometry args={[0.16, 0.5, 0.18]} />
+            <meshStandardMaterial color={0x2255aa} roughness={0.45} metalness={0.15} />
+          </mesh>
+          <mesh position={[0, -0.46, 0]} castShadow>
+            <boxGeometry args={[0.18, 0.08, 0.2]} />
+            <meshStandardMaterial color={0x111111} roughness={0.5} />
+          </mesh>
+          <mesh position={[0, -0.56, 0]} castShadow>
+            <boxGeometry args={[0.14, 0.12, 0.14]} />
+            <meshStandardMaterial color={0xd9a066} roughness={0.6} />
+          </mesh>
+        </group>
 
-        {/* Right arm (sleeve) */}
-        <mesh position={[0.32, 0.55, 0]} castShadow>
-          <boxGeometry args={[0.16, 0.5, 0.18]} />
-          <meshStandardMaterial color={0x2255aa} roughness={0.45} metalness={0.15} />
-        </mesh>
-        {/* Right cuff */}
-        <mesh position={[0.32, 0.32, 0]} castShadow>
-          <boxGeometry args={[0.18, 0.08, 0.2]} />
-          <meshStandardMaterial color={0x111111} roughness={0.5} />
-        </mesh>
-        {/* Right hand */}
-        <mesh position={[0.32, 0.22, 0]} castShadow>
-          <boxGeometry args={[0.14, 0.12, 0.14]} />
-          <meshStandardMaterial color={0xd9a066} roughness={0.6} />
-        </mesh>
+        {/* Left leg group - pivot at hip */}
+        <group ref={leftLegRef} position={[-0.13, 0.28, 0]}>
+          <mesh position={[0, -0.28, 0]} castShadow>
+            <boxGeometry args={[0.2, 0.55, 0.22]} />
+            <meshStandardMaterial color={0x0d0d0d} roughness={0.6} />
+          </mesh>
+          <mesh position={[0, -0.58, 0.04]} castShadow>
+            <boxGeometry args={[0.22, 0.14, 0.3]} />
+            <meshStandardMaterial color={0x3a2a1a} roughness={0.6} />
+          </mesh>
+        </group>
 
-        {/* Left leg (pants) */}
-        <mesh position={[-0.13, 0.0, 0]} castShadow>
-          <boxGeometry args={[0.2, 0.55, 0.22]} />
-          <meshStandardMaterial color={0x0d0d0d} roughness={0.6} />
-        </mesh>
-        {/* Left shoe */}
-        <mesh position={[-0.13, -0.3, 0.04]} castShadow>
-          <boxGeometry args={[0.22, 0.14, 0.3]} />
-          <meshStandardMaterial color={0x3a2a1a} roughness={0.6} />
-        </mesh>
-
-        {/* Right leg (pants) */}
-        <mesh position={[0.13, 0.0, 0]} castShadow>
-          <boxGeometry args={[0.2, 0.55, 0.22]} />
-          <meshStandardMaterial color={0x0d0d0d} roughness={0.6} />
-        </mesh>
-        {/* Right shoe */}
-        <mesh position={[0.13, -0.3, 0.04]} castShadow>
-          <boxGeometry args={[0.22, 0.14, 0.3]} />
-          <meshStandardMaterial color={0x3a2a1a} roughness={0.6} />
-        </mesh>
+        {/* Right leg group - pivot at hip */}
+        <group ref={rightLegRef} position={[0.13, 0.28, 0]}>
+          <mesh position={[0, -0.28, 0]} castShadow>
+            <boxGeometry args={[0.2, 0.55, 0.22]} />
+            <meshStandardMaterial color={0x0d0d0d} roughness={0.6} />
+          </mesh>
+          <mesh position={[0, -0.58, 0.04]} castShadow>
+            <boxGeometry args={[0.22, 0.14, 0.3]} />
+            <meshStandardMaterial color={0x3a2a1a} roughness={0.6} />
+          </mesh>
+        </group>
       </group>
     </RigidBody>
   );

@@ -13,9 +13,10 @@ import storyService from "../../serviceLayer/storyService.js";
 // Achievement & Progress System
 import {
   defeatBoss,
+  defeatBoss,
   completeStage,
   perfectScore,
-} from "../../gameData/playerProgress.js";
+} from "../../gameData/playerProgress";
 
 import { unlockAchievement } from "../Achievements/achievementManager";
 
@@ -181,13 +182,12 @@ if (scorePercentage >= 90) {
       // completed stage
       completeStage(roundInfo.chapterId);
 
-      // // defeated NPC
-      // addBossKill();
+      // defeated NPC
       defeatBoss();
 
       // perfect score
       if (nextScore >= roundInfo.numberOfTurns * 2) {
-        PerfectScore();
+        perfectScore();
       }
 
     }
