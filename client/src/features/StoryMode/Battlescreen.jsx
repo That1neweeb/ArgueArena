@@ -287,9 +287,7 @@ export default function BattleScreen() {
                     disabled={isResolving || isTurnTransition}
                     onClick={() => chooseOption(option)}
                   >
-                    <span className="option-num">
-                      {OPTION_MARKS[option.optionNumber - 1] || option.optionNumber}
-                    </span>
+                    
                     <span className="option-text">{option.text}</span>
                   </button>
                 ))
