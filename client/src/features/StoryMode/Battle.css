@@ -65,6 +65,8 @@
   gap: 6px;
 }
 
+/* ── Exit button ── */
+
 .battle-exit-btn {
   position: absolute;
   top: 14px;
@@ -254,17 +256,17 @@
 }
 
 .sprite-zone--enemy {
-  top: 6%;
-  right: 6%;
-  width: clamp(220px, 30vw, 360px);
-  height: clamp(220px, 38vh, 380px);
+  top: 2%;
+  right: 2%;
+  width: clamp(300px, 42vw, 520px);
+  height: clamp(300px, 55vh, 560px);
 }
 
 .sprite-zone--player {
-  bottom: 2%;
-  left: 4%;
-  width: clamp(240px, 34vw, 400px);
-  height: clamp(240px, 42vh, 420px);
+  bottom: 0%;
+  left: 2%;
+  width: clamp(320px, 46vw, 560px);
+  height: clamp(320px, 60vh, 580px);
 }
 
 .sprite-glow {
@@ -298,13 +300,13 @@
 }
 
 .battle-sprite--enemy {
-  height: clamp(220px, 36vh, 340px);
+  height: clamp(300px, 52vh, 520px);
   width: auto;
   max-width: 100%;
 }
 
 .battle-sprite--player {
-  height: clamp(260px, 42vh, 400px);
+  height: clamp(320px, 58vh, 560px);
   width: auto;
   max-width: 100%;
 }
@@ -487,6 +489,79 @@
   cursor: default;
 }
 
+/* ── Exit confirm modal ── */
+
+.exit-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(6px);
+  display: grid;
+  place-items: center;
+}
+
+.exit-modal {
+  background: rgba(17, 24, 39, 0.95);
+  border: 1px solid var(--border-soft);
+  border-radius: 18px;
+  padding: 32px 40px;
+  text-align: center;
+  box-shadow: 0 0 40px rgba(79, 140, 255, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.exit-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 0;
+}
+
+.exit-sub {
+  font-size: 0.88rem;
+  color: rgba(232, 238, 248, 0.55);
+  margin: 0;
+}
+
+.exit-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+  justify-content: center;
+}
+
+.exit-btn {
+  padding: 10px 24px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: 1px solid var(--border-soft);
+  transition: all 0.2s ease;
+}
+
+.exit-btn--cancel {
+  background: rgba(255, 255, 255, 0.06);
+  color: #e8eef8;
+}
+
+.exit-btn--cancel:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.exit-btn--confirm {
+  background: var(--danger);
+  color: #fff;
+  border-color: var(--danger);
+}
+
+.exit-btn--confirm:hover {
+  opacity: 0.85;
+}
+
 /* ── Animations ── */
 
 @keyframes cardEnter {
@@ -575,28 +650,27 @@
   }
 
   .sprite-zone--enemy {
-    top: 18%;
-    right: 2%;
+    top: 6%;
+    right: 6%;
+    width: clamp(280px, 38vw, 460px);
+    height: clamp(280px, 48vh, 480px);
   }
 
   .sprite-zone--player {
-    bottom: 14%;
-    left: 0;
+    bottom: 2%;
+    left: 4%;
+    width: clamp(300px, 42vw, 500px);
+    height: clamp(300px, 52vh, 520px);
   }
 }
 
 @media (max-height: 720px) {
-  .poke-menu-grid {
-    height: clamp(220px, 34vh, 280px);
-    min-height: 220px;
-  }
-
   .battle-sprite--enemy {
-    height: clamp(180px, 32vh, 280px);
+    height: clamp(240px, 42vh, 380px);
   }
 
   .battle-sprite--player {
-    height: clamp(200px, 36vh, 300px);
+    height: clamp(260px, 48vh, 420px);
   }
 
   .combat-card {
@@ -604,8 +678,8 @@
   }
 
   .combat-portrait {
-    width: 52px;
-    height: 52px;
+    width: 64px;
+    height: 64px;
   }
 
   .dialogue-text {

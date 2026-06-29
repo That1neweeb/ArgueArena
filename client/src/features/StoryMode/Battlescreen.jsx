@@ -13,9 +13,7 @@ import storyService from "../../serviceLayer/storyService.js";
 // Achievement & Progress System
 import {
   defeatBoss,
-  defeatBoss,
   completeStage,
-  perfectScore,
 } from "../../gameData/playerProgress";
 
 import { unlockAchievement } from "../Achievements/achievementManager";
@@ -49,6 +47,7 @@ export default function BattleScreen() {
   const [isResolving, setIsResolving] = useState(false);
   const [isTurnTransition, setIsTurnTransition] = useState(false);
   const [error, setError] = useState("");
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
 
   const npcImage = {
     idle: npcIdle,
@@ -61,13 +60,12 @@ export default function BattleScreen() {
   const xpDisplay = score * 8;
 
   const handleExitBattle = () => {
-    const confirmed = window.confirm(
-      "Exit this battle? Unsaved progress for this round will be lost."
-    );
-    if (confirmed) {
-      if (advanceTimer.current) clearTimeout(advanceTimer.current);
-      navigate("/story");
-    }
+    setShowExitConfirm(true);
+  };
+
+  const confirmExit = () => {
+    if (advanceTimer.current) clearTimeout(advanceTimer.current);
+    navigate("/story");
   };
 
   const fetchTurn = async (debateId, currentTurn, { fullScreen = false } = {}) => {
@@ -112,7 +110,6 @@ export default function BattleScreen() {
 
   useEffect(() => {
     if (!id) return;
-
     setTurnNumber(1);
     setScore(0);
     setError("");
@@ -139,18 +136,12 @@ export default function BattleScreen() {
       const result = await storyService.submitTurn(turn.id, option.optionNumber);
       const nextScore = score + (result.earnedScore || 0);
       const maxPossibleScore = roundInfo.numberOfTurns * 2;
-const scorePercentage =
-    (nextScore / maxPossibleScore) * 100;
+      const scorePercentage = (nextScore / maxPossibleScore) * 100;
 
-// Critical Thinker
-if (scorePercentage >= 90) {
-    unlockAchievement("critical");
-}
+      if (scorePercentage >= 90) {
+        unlockAchievement("critical");
+      }
 
-// // Perfect Argument
-// if (scorePercentage === 100) {
-//     unlockAchievement("perfect");
-// }
       setScore(nextScore);
       setNpcMood(result.expression || moodMap[result.quality] || "neutral");
       setDialogue(result.npcReply || "Your argument lands.");
@@ -164,35 +155,18 @@ if (scorePercentage >= 90) {
       });
 
       if (isLastTurn) {
+        const finishResult = await storyService.finishRound(
+          roundInfo.chapterId,
+          roundInfo.roundNumber,
+          nextScore,
+          roundInfo.passingScore,
+          roundInfo.bossRound
+        );
 
-    const finishResult = await storyService.finishRound(
-      roundInfo.chapterId,
-      roundInfo.roundNumber,
-      nextScore,
-      roundInfo.passingScore,
-      roundInfo.bossRound
-    );
-
-    // ===========================================
-    // NEW ACHIEVEMENT SYSTEM
-    // ===========================================
-
-    if (finishResult.passed) {
-
-      // completed stage
-      completeStage(roundInfo.chapterId);
-
-      // defeated NPC
-      defeatBoss();
-
-      // perfect score
-      if (nextScore >= roundInfo.numberOfTurns * 2) {
-        perfectScore();
-      }
-
-    }
-
-    // ===========================================
+        if (finishResult.passed) {
+          completeStage(roundInfo.chapterId);
+          defeatBoss();
+        }
 
         navigate("/story/round-result", {
           state: {
@@ -224,6 +198,22 @@ if (scorePercentage >= 90) {
           ← Exit Battle
         </button>
         <div className="battle-status-message">Loading battle...</div>
+        {showExitConfirm && (
+          <div className="exit-overlay">
+            <div className="exit-modal">
+              <p className="exit-title">Exit Battle?</p>
+              <p className="exit-sub">Your current progress will be lost.</p>
+              <div className="exit-actions">
+                <button className="exit-btn exit-btn--cancel" onClick={() => setShowExitConfirm(false)}>
+                  Keep Fighting
+                </button>
+                <button className="exit-btn exit-btn--confirm" onClick={confirmExit}>
+                  Exit
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -235,6 +225,22 @@ if (scorePercentage >= 90) {
           ← Exit Battle
         </button>
         <div className="battle-status-message">{error}</div>
+        {showExitConfirm && (
+          <div className="exit-overlay">
+            <div className="exit-modal">
+              <p className="exit-title">Exit Battle?</p>
+              <p className="exit-sub">Your current progress will be lost.</p>
+              <div className="exit-actions">
+                <button className="exit-btn exit-btn--cancel" onClick={() => setShowExitConfirm(false)}>
+                  Keep Fighting
+                </button>
+                <button className="exit-btn exit-btn--confirm" onClick={confirmExit}>
+                  Exit
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -332,7 +338,6 @@ if (scorePercentage >= 90) {
                     disabled={isResolving || isTurnTransition}
                     onClick={() => chooseOption(option)}
                   >
-                    
                     <span className="option-text">{option.text}</span>
                   </button>
                 ))
@@ -345,6 +350,23 @@ if (scorePercentage >= 90) {
           </div>
         </footer>
       </div>
+
+      {showExitConfirm && (
+        <div className="exit-overlay">
+          <div className="exit-modal">
+            <p className="exit-title">Exit Battle?</p>
+            <p className="exit-sub">Your current progress will be lost.</p>
+            <div className="exit-actions">
+              <button className="exit-btn exit-btn--cancel" onClick={() => setShowExitConfirm(false)}>
+                Keep Fighting
+              </button>
+              <button className="exit-btn exit-btn--confirm" onClick={confirmExit}>
+                Exit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
