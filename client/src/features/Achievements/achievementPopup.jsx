@@ -28,7 +28,12 @@ export default function AchievementPopup({ achievement }) {
 
                 </div>
 
+                <div className="popup-close-hint">
+                    (auto closes)
+                </div>
+
             </div>
+
 
         </div>
 

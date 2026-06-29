@@ -96,7 +96,9 @@ const [popupAchievement, setPopupAchievement] = useState(null);
 
       }, 3500);
 
+      // cleanup handled by state timeout
     }
+
 
     window.addEventListener(
       "achievementUnlocked",
