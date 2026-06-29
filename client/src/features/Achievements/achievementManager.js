@@ -325,7 +325,11 @@
 // Every function is async because it hits the network.
 // ================================================================
 
+import { ACHIEVEMENTS } from "./AchievementData";
+
 const BASE = "http://localhost:3002/api/story";
+const KNOWN_UNLOCKED_KEYS = new Set();
+let achievementSyncPromise = null;
 
 // ── Internal helpers ────────────────────────────────────────────
 
@@ -386,6 +390,32 @@ function post(path, body = {}) {
 export async function getAchievementsWithStatus() {
   const data = await apiFetch("/achievements");
   return data.achievements;
+}
+
+export async function refreshAchievementState() {
+  if (achievementSyncPromise) return achievementSyncPromise;
+
+  achievementSyncPromise = (async () => {
+    const list = await getAchievementsWithStatus();
+    const unlockedKeys = new Set(
+      (list || [])
+        .filter((achievement) => achievement.unlocked)
+        .map((achievement) => achievement.key || achievement.id)
+    );
+
+    const newlyUnlocked = [...unlockedKeys].filter(
+      (key) => key && !KNOWN_UNLOCKED_KEYS.has(key)
+    );
+
+    newlyUnlocked.forEach((key) => KNOWN_UNLOCKED_KEYS.add(key));
+    return newlyUnlocked;
+  })();
+
+  try {
+    return await achievementSyncPromise;
+  } finally {
+    achievementSyncPromise = null;
+  }
 }
 
 
@@ -472,11 +502,9 @@ export async function reportChapterFinished({ chapterId, neverFailed = false }) 
 // Keep these functions exported so existing StoryMode imports compile.
 // The actual unlock state shown on Achievements page is server-driven.
 
-export function unlockAchievement(_id) {
-  // No-op client-side: achievements are unlocked by backend,
-  // but some game logic still calls this function.
-  // We keep it to avoid build-time missing exports.
-  return;
+export async function unlockAchievement(id) {
+  if (!id) return null;
+  return dispatchAchievementPopups([id]);
 }
 
 // Provide stub for perfect score tracking used by Battlescreen.
@@ -497,15 +525,31 @@ export function perfectScore() {
 //   dispatchAchievementPopups(newAchievements);
 // ================================================================
 
-export function dispatchAchievementPopups(newAchievements = []) {
-  // appRoutes.jsx expects event.detail to be the achievement id.
-  newAchievements.forEach((achievement) => {
+export async function dispatchAchievementPopups(newAchievements = []) {
+  const list = await getAchievementsWithStatus();
+  const unlockedKeys = new Set(
+    (list || [])
+      .filter((achievement) => achievement.unlocked)
+      .map((achievement) => achievement.key || achievement.id)
+  );
+
+  const idsToShow = [];
+
+  (newAchievements || []).forEach((achievement) => {
     const id = typeof achievement === "string" ? achievement : achievement.id;
-    if (!id) return;
-    window.dispatchEvent(
-      new CustomEvent("achievementUnlocked", { detail: id })
-    );
+    if (!id || !unlockedKeys.has(id) || KNOWN_UNLOCKED_KEYS.has(id)) return;
+
+    KNOWN_UNLOCKED_KEYS.add(id);
+    idsToShow.push(id);
   });
+
+  idsToShow.forEach((id) => {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("achievementUnlocked", { detail: id }));
+    }
+  });
+
+  return idsToShow;
 }
 
 

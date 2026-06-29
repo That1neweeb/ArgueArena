@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import storyService from "../../serviceLayer/storyService.js";
 import "./StoryMode.css";
-import { unlockAchievement } from "../Achievements/achievementManager";
+import { dispatchAchievementPopups } from "../Achievements/achievementManager";
 
 export default function ChapterComplete() {
   const { chapterId } = useParams();
@@ -16,6 +16,7 @@ export default function ChapterComplete() {
     const finish = async () => {
       try {
         const response = await storyService.finishChapter(chapterId);
+        void dispatchAchievementPopups(response?.earnedAchievements || []);
         setResult({ ...response, ...state });
       } catch (err) {
         setError(err.message || "Unable to finish chapter.");

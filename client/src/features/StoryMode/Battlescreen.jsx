@@ -17,7 +17,7 @@ import {
   completeStage,
 } from "../../gameData/playerProgress";
 
-import { unlockAchievement } from "../Achievements/achievementManager";
+import { dispatchAchievementPopups } from "../Achievements/achievementManager";
 
 // ── SOUNDS ────────────────────────────────────────────────────────────────
 const sounds = {
@@ -204,10 +204,6 @@ export default function BattleScreen() {
         sounds.wrongAnswer.play();
       }
 
-      if (scorePercentage >= 90) {
-        unlockAchievement("critical");
-      }
-
       setScore(nextScore);
       setNpcMood(result.expression || moodMap[result.quality] || "neutral");
       setDialogue(result.npcReply || "Your argument lands.");
@@ -229,20 +225,14 @@ export default function BattleScreen() {
           roundInfo.bossRound
         );
 
+        void dispatchAchievementPopups(finishResult.earnedAchievements || []);
+
         // Stop BGM then play result sting
         sounds.battleBgm.stop();
         if (finishResult.passed) {
           sounds.victory.play();
           completeStage(roundInfo.chapterId);
           defeatBoss();
-
-          if (nextScore >= roundInfo.numberOfTurns * 2) {
-        // The backend will grant `perfect-round` when the round is passed
-        // as `perfectRound` if the game provides per-turn qualities.
-        // We still notify client-side achievements popup to show it immediately.
-        unlockAchievement("perfect-round");
-      }
-
         } else {
           sounds.defeat.play();
         }

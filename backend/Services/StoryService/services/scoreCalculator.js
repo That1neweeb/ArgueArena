@@ -1,7 +1,7 @@
 export const OPTION_SCORES = {
   GOOD: 2,
   NEUTRAL: 1,
-  POOR: 0,
+  POOR: -1,
 };
 
 /**
@@ -9,7 +9,7 @@ export const OPTION_SCORES = {
  * quality:
  * 2 = Good
  * 1 = Neutral
- * 0 = Poor
+ * 0 = Poor (deducts one point)
  */
 export const calculateOptionScore = (quality) => {
   switch (quality) {

@@ -51,7 +51,7 @@ export default function Scene({ onEnterZone }) {
       
 
       {/* Grid */}
-      <gridHelper args={[30, 30, 0xe85d0422, 0xff9a3c11]} />
+      {/* <gridHelper args={[30, 30, 0xe85d0422, 0xff9a3c11]} /> */}
 
       {/* Zone plates */}
       {PLATE_DATA.map((pd) => (

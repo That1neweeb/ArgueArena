@@ -49,6 +49,7 @@ import React, { Suspense, useEffect, useState } from "react";
 // Achievement Popup
 import AchievementPopup from "../features/Achievements/AchievementPopup";
 import { ACHIEVEMENTS } from "../features/Achievements/AchievementData";
+import { refreshAchievementState } from "../features/Achievements/achievementManager";
 
 import ProtectedRoute from './ProtectedRoutes';
 
@@ -77,6 +78,7 @@ const [popupAchievement, setPopupAchievement] = useState(null);
   // ===============================================
 
   useEffect(() => {
+    void refreshAchievementState();
 
     function handleAchievement(event) {
 
